@@ -69,6 +69,7 @@ export type Database = {
           subscription_status: string
           trial_end_date: string | null
           trial_start_date: string | null
+          trial_used: boolean
         }
         Insert: {
           created_at?: string
@@ -82,6 +83,7 @@ export type Database = {
           subscription_status?: string
           trial_end_date?: string | null
           trial_start_date?: string | null
+          trial_used?: boolean
         }
         Update: {
           created_at?: string
@@ -95,6 +97,7 @@ export type Database = {
           subscription_status?: string
           trial_end_date?: string | null
           trial_start_date?: string | null
+          trial_used?: boolean
         }
         Relationships: []
       }
