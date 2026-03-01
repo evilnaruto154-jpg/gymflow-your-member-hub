@@ -8,6 +8,7 @@ export interface Profile {
   name: string | null;
   trial_start_date: string;
   trial_end_date: string;
+  trial_used: boolean;
   subscription_status: string;
   subscription_plan: string | null;
   subscription_end_date: string | null;
