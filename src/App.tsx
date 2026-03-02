@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MemberForm from "./pages/MemberForm";
 import Subscription from "./pages/Subscription";
+import AttendancePage from "./pages/AttendancePage";
+import ExpensesPage from "./pages/ExpensesPage";
 import SettingsPage from "./pages/SettingsPage";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
@@ -96,6 +98,22 @@ const App = () => (
                   element={
                     <SubscriptionGate>
                       <MemberForm />
+                    </SubscriptionGate>
+                  }
+                />
+                <Route
+                  path="/attendance"
+                  element={
+                    <SubscriptionGate>
+                      <AttendancePage />
+                    </SubscriptionGate>
+                  }
+                />
+                <Route
+                  path="/expenses"
+                  element={
+                    <SubscriptionGate>
+                      <ExpensesPage />
                     </SubscriptionGate>
                   }
                 />

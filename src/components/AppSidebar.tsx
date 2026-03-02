@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard, Dumbbell } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard, Dumbbell, CalendarCheck, IndianRupee } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -20,6 +20,8 @@ const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Members", url: "/members", icon: Users },
   { title: "Add Member", url: "/members/new", icon: UserPlus },
+  { title: "Attendance", url: "/attendance", icon: CalendarCheck },
+  { title: "Expenses", url: "/expenses", icon: IndianRupee },
   { title: "Subscription", url: "/subscription", icon: CreditCard },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
