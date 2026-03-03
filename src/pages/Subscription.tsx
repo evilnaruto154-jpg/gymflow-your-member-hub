@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,9 +42,11 @@ const plans = [
 ];
 
 const Subscription = () => {
-  const { profile, isActive, isTrialing, trialDaysLeft, trialExpired } = useProfile();
+  const { profile, isActive, isTrialing, trialDaysLeft, trialExpired, updateProfile } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
+  const [startingTrial, setStartingTrial] = useState(false);
 
   const handleSubscribe = (plan: string) => {
     toast({
@@ -52,11 +55,34 @@ const Subscription = () => {
     });
   };
 
-  const handleStartTrial = () => {
-    toast({
-      title: "Trial Started!",
-      description: "Your 7-day free PRO trial is now active. Enjoy full access!",
-    });
+  const handleStartTrial = async () => {
+    setStartingTrial(true);
+    try {
+      const now = new Date();
+      const trialEnd = new Date(now);
+      trialEnd.setDate(trialEnd.getDate() + 7);
+
+      await updateProfile.mutateAsync({
+        subscription_status: "trialing",
+        trial_start_date: now.toISOString(),
+        trial_end_date: trialEnd.toISOString(),
+        trial_used: false,
+      });
+
+      toast({
+        title: "Trial Started Successfully!",
+        description: "Your 7-day free trial is now active. Enjoy full access!",
+      });
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message || "Could not start trial. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingTrial(false);
+    }
   };
 
   const statusBadge = isActive
@@ -88,7 +114,9 @@ const Subscription = () => {
                 <p className="text-sm text-muted-foreground">Full PRO access. No credit card required.</p>
               </div>
             </div>
-            <Button size="lg" onClick={handleStartTrial}>Start Free Trial</Button>
+            <Button size="lg" onClick={handleStartTrial} disabled={startingTrial}>
+              {startingTrial ? "Activating..." : "Start Free Trial"}
+            </Button>
           </CardContent>
         </Card>
       )}
