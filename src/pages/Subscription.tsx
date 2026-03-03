@@ -1,50 +1,49 @@
+import { useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 const plans = [
   {
-    name: "Starter Monthly",
-    price: "₹199",
-    period: "/month",
-    value: "starter_monthly",
+    name: "Starter",
+    monthlyPrice: "₹249",
+    yearlyPrice: "₹2,499",
+    monthlyValue: "starter_monthly",
+    yearlyValue: "starter_yearly",
     popular: false,
-    features: ["Up to 100 members", "WhatsApp reminders", "Expiry tracking", "Dashboard analytics"],
+    features: [
+      "Up to 100 members",
+      "WhatsApp reminders",
+      "Expiry tracking",
+      "Dashboard analytics",
+    ],
   },
   {
-    name: "Starter Yearly",
-    price: "₹1,999",
-    period: "/year",
-    value: "starter_yearly",
-    popular: false,
-    badge: "SAVE 16%",
-    features: ["Everything in Starter Monthly", "Priority email support", "Data export"],
-  },
-  {
-    name: "Pro Monthly",
-    price: "₹399",
-    period: "/month",
-    value: "pro_monthly",
+    name: "Pro",
+    monthlyPrice: "₹449",
+    yearlyPrice: "₹4,499",
+    monthlyValue: "pro_monthly",
+    yearlyValue: "pro_yearly",
     popular: true,
-    features: ["Unlimited members", "Attendance tracking", "Expense management", "Reports & analytics", "Staff accounts"],
-  },
-  {
-    name: "Pro Yearly",
-    price: "₹3,999",
-    period: "/year",
-    value: "pro_yearly",
-    popular: false,
-    badge: "SAVE 17%",
-    features: ["Everything in Pro Monthly", "Priority support", "Early access to features", "Best value"],
+    features: [
+      "Unlimited members",
+      "Attendance tracking",
+      "Expense management",
+      "Reports & analytics",
+      "Staff accounts",
+      "Priority support",
+    ],
   },
 ];
 
 const Subscription = () => {
-  const { profile, isActive, isTrialing, trialDaysLeft, trialExpired, hasAccess } = useProfile();
+  const { profile, isActive, isTrialing, trialDaysLeft, trialExpired } = useProfile();
   const { toast } = useToast();
+  const [isYearly, setIsYearly] = useState(false);
 
   const handleSubscribe = (plan: string) => {
     toast({
@@ -56,7 +55,7 @@ const Subscription = () => {
   const handleStartTrial = () => {
     toast({
       title: "Trial Started!",
-      description: "Your 7-day free trial is now active. Enjoy GymFlow Pro!",
+      description: "Your 7-day free PRO trial is now active. Enjoy full access!",
     });
   };
 
@@ -69,7 +68,7 @@ const Subscription = () => {
         : { label: "No Plan", className: "bg-muted text-muted-foreground border-border" };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       <div className="text-center">
         <h1 className="text-3xl font-bold font-display text-foreground">Choose Your Plan</h1>
         <p className="text-muted-foreground mt-2">Unlock the full potential of GymFlow Pro</p>
@@ -85,8 +84,8 @@ const Subscription = () => {
             <div className="flex items-center gap-3">
               <Sparkles className="h-6 w-6 text-primary" />
               <div>
-                <p className="font-display font-bold text-foreground">Start your 7-day free trial</p>
-                <p className="text-sm text-muted-foreground">No credit card required. Cancel anytime.</p>
+                <p className="font-display font-bold text-foreground">Start your 7-day FREE PRO Trial</p>
+                <p className="text-sm text-muted-foreground">Full PRO access. No credit card required.</p>
               </div>
             </div>
             <Button size="lg" onClick={handleStartTrial}>Start Free Trial</Button>
@@ -94,57 +93,72 @@ const Subscription = () => {
         </Card>
       )}
 
+      {/* Billing Toggle */}
+      <div className="flex items-center justify-center gap-3">
+        <span className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+        <Switch checked={isYearly} onCheckedChange={setIsYearly} />
+        <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
+          Yearly
+        </span>
+        {isYearly && (
+          <Badge variant="secondary" className="bg-primary/15 text-primary border-primary/30 text-xs">
+            Save 20%
+          </Badge>
+        )}
+      </div>
+
       {/* Pricing Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {plans.map((plan) => (
-          <Card
-            key={plan.value}
-            className={`relative overflow-hidden backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
-              plan.popular
-                ? "border-primary bg-card shadow-primary/10 shadow-lg"
-                : "border-border bg-card/80"
-            }`}
-          >
-            {plan.popular && (
-              <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">
-                MOST POPULAR
-              </div>
-            )}
-            {plan.badge && !plan.popular && (
-              <div className="absolute top-0 right-0 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-                {plan.badge}
-              </div>
-            )}
-            <CardHeader className={plan.popular ? "pt-8" : ""}>
-              <CardTitle className="font-display text-lg">{plan.name}</CardTitle>
-              <div className="mt-2">
-                <span className="text-3xl font-bold font-display">{plan.price}</span>
-                <span className="text-muted-foreground text-sm">{plan.period}</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {plan.features.map((f) => (
-                <div key={f} className="flex items-start gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <span>{f}</span>
+      <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        {plans.map((plan) => {
+          const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+          const period = isYearly ? "/year" : "/month";
+          const value = isYearly ? plan.yearlyValue : plan.monthlyValue;
+
+          return (
+            <Card
+              key={plan.name}
+              className={`relative overflow-hidden backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg ${
+                plan.popular
+                  ? "border-primary bg-card shadow-primary/10 shadow-lg"
+                  : "border-border bg-card/80"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-xs font-bold text-center py-1">
+                  MOST POPULAR
                 </div>
-              ))}
-              <Button
-                className="w-full mt-4"
-                variant={plan.popular ? "default" : "outline"}
-                onClick={() => handleSubscribe(plan.value)}
-                disabled={isActive && profile?.subscription_plan === plan.value}
-              >
-                {isActive && profile?.subscription_plan === plan.value ? "Current Plan" : "Subscribe"}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              )}
+              <CardHeader className={plan.popular ? "pt-8" : ""}>
+                <CardTitle className="font-display text-lg">{plan.name}</CardTitle>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold font-display">{price}</span>
+                  <span className="text-muted-foreground text-sm">{period}</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {plan.features.map((f) => (
+                  <div key={f} className="flex items-start gap-2 text-sm">
+                    <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    <span>{f}</span>
+                  </div>
+                ))}
+                <Button
+                  className="w-full mt-4"
+                  variant={plan.popular ? "default" : "outline"}
+                  onClick={() => handleSubscribe(value)}
+                  disabled={isActive && profile?.subscription_plan === value}
+                >
+                  {isActive && profile?.subscription_plan === value ? "Current Plan" : "Subscribe"}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Trust badges */}
       <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-        {["✔ 7-Day Free Trial", "✔ Cancel Anytime", "✔ No Hidden Charges", "✔ Secure Payments"].map((t) => (
+        {["✔ 7-Day Free PRO Trial", "✔ Cancel Anytime", "✔ No Hidden Charges", "✔ Secure Payments"].map((t) => (
           <span key={t}>{t}</span>
         ))}
       </div>
