@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { AppLayout } from "@/components/AppLayout";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
@@ -15,6 +16,7 @@ import MemberForm from "./pages/MemberForm";
 import Subscription from "./pages/Subscription";
 import AttendancePage from "./pages/AttendancePage";
 import ExpensesPage from "./pages/ExpensesPage";
+import InventoryPage from "./pages/InventoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
@@ -60,6 +62,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/install" element={<Install />} />
               <Route
                 element={
@@ -69,54 +72,13 @@ const App = () => (
                 }
               >
                 <Route path="/subscription" element={<Subscription />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <SubscriptionGate>
-                      <Dashboard />
-                    </SubscriptionGate>
-                  }
-                />
-                <Route
-                  path="/members"
-                  element={
-                    <SubscriptionGate>
-                      <Members />
-                    </SubscriptionGate>
-                  }
-                />
-                <Route
-                  path="/members/new"
-                  element={
-                    <SubscriptionGate>
-                      <MemberForm />
-                    </SubscriptionGate>
-                  }
-                />
-                <Route
-                  path="/members/:id/edit"
-                  element={
-                    <SubscriptionGate>
-                      <MemberForm />
-                    </SubscriptionGate>
-                  }
-                />
-                <Route
-                  path="/attendance"
-                  element={
-                    <SubscriptionGate>
-                      <AttendancePage />
-                    </SubscriptionGate>
-                  }
-                />
-                <Route
-                  path="/expenses"
-                  element={
-                    <SubscriptionGate>
-                      <ExpensesPage />
-                    </SubscriptionGate>
-                  }
-                />
+                <Route path="/dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
+                <Route path="/members" element={<SubscriptionGate><Members /></SubscriptionGate>} />
+                <Route path="/members/new" element={<SubscriptionGate><MemberForm /></SubscriptionGate>} />
+                <Route path="/members/:id/edit" element={<SubscriptionGate><MemberForm /></SubscriptionGate>} />
+                <Route path="/attendance" element={<SubscriptionGate><AttendancePage /></SubscriptionGate>} />
+                <Route path="/expenses" element={<SubscriptionGate><ExpensesPage /></SubscriptionGate>} />
+                <Route path="/inventory" element={<SubscriptionGate><InventoryPage /></SubscriptionGate>} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
               <Route path="*" element={<NotFound />} />
