@@ -1,28 +1,39 @@
-import { LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard, Dumbbell, CalendarCheck, IndianRupee } from "lucide-react";
+import {
+  LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard,
+  Dumbbell, CalendarCheck, IndianRupee, Package
+} from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
+import { Badge } from "@/components/ui/badge";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  SidebarHeader,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  SidebarFooter, SidebarHeader, useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
-const navItems = [
+const ownerNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Members", url: "/members", icon: Users },
   { title: "Add Member", url: "/members/new", icon: UserPlus },
   { title: "Attendance", url: "/attendance", icon: CalendarCheck },
   { title: "Expenses", url: "/expenses", icon: IndianRupee },
+  { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Subscription", url: "/subscription", icon: CreditCard },
+  { title: "Settings", url: "/settings", icon: Settings },
+];
+
+const trainerNav = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Members", url: "/members", icon: Users },
+  { title: "Attendance", url: "/attendance", icon: CalendarCheck },
+  { title: "Settings", url: "/settings", icon: Settings },
+];
+
+const staffNav = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Members", url: "/members", icon: Users },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -30,6 +41,12 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut, user } = useAuth();
+  const { primaryRole, isOwner } = useRole();
+
+  const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
+
+  const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
+  const roleColor = isOwner ? "bg-primary/15 text-primary border-primary/30" : "bg-secondary text-secondary-foreground border-border";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -67,11 +84,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-3 space-y-2">
         {!collapsed && (
-          <p className="text-xs text-sidebar-foreground truncate mb-2 px-2">
-            {user?.email}
-          </p>
+          <div className="px-2 space-y-1">
+            <p className="text-xs text-sidebar-foreground truncate">{user?.email}</p>
+            <Badge variant="outline" className={`text-[10px] ${roleColor}`}>{roleBadge}</Badge>
+          </div>
         )}
         <Button
           variant="ghost"
