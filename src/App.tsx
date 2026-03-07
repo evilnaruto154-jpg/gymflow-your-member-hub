@@ -18,6 +18,7 @@ import AttendancePage from "./pages/AttendancePage";
 import ExpensesPage from "./pages/ExpensesPage";
 import InventoryPage from "./pages/InventoryPage";
 import SettingsPage from "./pages/SettingsPage";
+import TrainerManagement from "./pages/TrainerManagement";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -79,6 +80,7 @@ const App = () => (
                 <Route path="/attendance" element={<SubscriptionGate><AttendancePage /></SubscriptionGate>} />
                 <Route path="/expenses" element={<SubscriptionGate><ExpensesPage /></SubscriptionGate>} />
                 <Route path="/inventory" element={<SubscriptionGate><InventoryPage /></SubscriptionGate>} />
+                <Route path="/trainers" element={<SubscriptionGate><TrainerManagement /></SubscriptionGate>} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
               <Route path="*" element={<NotFound />} />

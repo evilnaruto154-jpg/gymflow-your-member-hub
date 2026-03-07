@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useMembers, getMemberStatus } from "@/hooks/useMembers";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useInventory } from "@/hooks/useInventory";
+import { useTrainers } from "@/hooks/useTrainers";
 import { useProfile } from "@/hooks/useProfile";
 import { useRole } from "@/hooks/useRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, UserCheck, UserPlus, AlertTriangle, TrendingUp, IndianRupee,
-  Clock, CreditCard, Package, ArrowRight
+  Clock, CreditCard, Package, ArrowRight, UserCog
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -25,7 +26,8 @@ const Dashboard = () => {
   const { membersQuery } = useMembers();
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
-  const { isTrialing, trialDaysLeft } = useProfile();
+  const { activeTrainers, trainers: allTrainers } = useTrainers();
+  const { isTrialing, trialDaysLeft, profile } = useProfile();
   const { isOwner } = useRole();
   const navigate = useNavigate();
   const members = membersQuery.data ?? [];
