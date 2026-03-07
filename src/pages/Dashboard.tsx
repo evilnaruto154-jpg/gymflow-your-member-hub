@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useMembers, getMemberStatus } from "@/hooks/useMembers";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useInventory } from "@/hooks/useInventory";
+import { useTrainers } from "@/hooks/useTrainers";
 import { useProfile } from "@/hooks/useProfile";
 import { useRole } from "@/hooks/useRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, UserCheck, UserPlus, AlertTriangle, TrendingUp, IndianRupee,
-  Clock, CreditCard, Package, ArrowRight
+  Clock, CreditCard, Package, ArrowRight, UserCog
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -25,7 +26,8 @@ const Dashboard = () => {
   const { membersQuery } = useMembers();
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
-  const { isTrialing, trialDaysLeft } = useProfile();
+  const { activeTrainers, trainers: allTrainers } = useTrainers();
+  const { isTrialing, trialDaysLeft, profile } = useProfile();
   const { isOwner } = useRole();
   const navigate = useNavigate();
   const members = membersQuery.data ?? [];
@@ -158,6 +160,21 @@ const Dashboard = () => {
               <p className="text-sm font-medium">{lowStockItems.length} inventory item(s) below reorder level</p>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Trainer Stats - Owner with Pro plan */}
+      {isOwner && profile?.subscription_plan?.includes("pro") && (
+        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => navigate("/trainers")}>
+          <CardContent className="py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <UserCog className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-medium">{activeTrainers.length} Active Trainer(s) · {allTrainers.length} Total</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm">Manage Trainers</Button>
           </CardContent>
         </Card>
       )}

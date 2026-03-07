@@ -1,20 +1,26 @@
 import { useProfile } from "@/hooks/useProfile";
 
-export type Feature = "members" | "whatsapp" | "attendance" | "expenses" | "reports" | "staff";
+export type Feature = "members" | "whatsapp" | "attendance" | "expenses" | "reports" | "staff" | "trainers";
 
 const TRIAL_FEATURES: Feature[] = ["members", "whatsapp"];
-const ACTIVE_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff"];
+const STARTER_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff"];
+const PRO_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff", "trainers"];
 
 export function useFeatureAccess() {
-  const { isActive, isTrialing, trialExpired, hasAccess } = useProfile();
+  const { isActive, isTrialing, trialExpired, hasAccess, profile } = useProfile();
+
+  const isPro = profile?.subscription_plan?.includes("pro") || false;
 
   const canAccess = (feature: Feature): boolean => {
-    if (isActive) return true;
+    if (isActive) {
+      if (isPro) return PRO_FEATURES.includes(feature);
+      return STARTER_FEATURES.includes(feature);
+    }
     if (isTrialing && !trialExpired) return TRIAL_FEATURES.includes(feature);
     return false;
   };
 
   const isLocked = (feature: Feature): boolean => !canAccess(feature);
 
-  return { canAccess, isLocked, hasAccess, isActive, isTrialing, trialExpired };
+  return { canAccess, isLocked, hasAccess, isActive, isTrialing, trialExpired, isPro };
 }
