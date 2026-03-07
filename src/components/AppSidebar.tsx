@@ -1,7 +1,8 @@
 import {
   LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard,
-  Dumbbell, CalendarCheck, IndianRupee, Package
+  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog
 } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -13,13 +14,14 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
-const ownerNav = [
+const ownerNavBase = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Members", url: "/members", icon: Users },
   { title: "Add Member", url: "/members/new", icon: UserPlus },
   { title: "Attendance", url: "/attendance", icon: CalendarCheck },
   { title: "Expenses", url: "/expenses", icon: IndianRupee },
   { title: "Inventory", url: "/inventory", icon: Package },
+  { title: "Trainers", url: "/trainers", icon: UserCog, proOnly: true },
   { title: "Subscription", url: "/subscription", icon: CreditCard },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
@@ -42,7 +44,10 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { signOut, user } = useAuth();
   const { primaryRole, isOwner } = useRole();
+  const { profile } = useProfile();
 
+  const isPro = profile?.subscription_plan?.includes("pro") || false;
+  const ownerNav = ownerNavBase.filter((item) => !("proOnly" in item) || isPro);
   const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
 
   const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
