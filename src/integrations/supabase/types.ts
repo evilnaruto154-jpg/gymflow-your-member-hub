@@ -235,6 +235,42 @@ export type Database = {
         }
         Relationships: []
       }
+      trainers: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          phone: string
+          status: string
+          trainer_email: string
+          trainer_name: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          phone?: string
+          status?: string
+          trainer_email: string
+          trainer_name: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          phone?: string
+          status?: string
+          trainer_email?: string
+          trainer_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
