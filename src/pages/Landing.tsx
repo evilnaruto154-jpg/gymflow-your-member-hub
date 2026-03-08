@@ -34,7 +34,7 @@ const Landing = () => {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Button variant="ghost" onClick={() => navigate("/auth")}>Login</Button>
-          <Button onClick={() => navigate("/auth")}>Start Free Trial</Button>
+          <Button onClick={() => navigate("/get-started")}>Start Free Trial</Button>
         </div>
       </nav>
 
@@ -52,7 +52,7 @@ const Landing = () => {
           Built for gym owners who want simplicity.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" onClick={() => navigate("/auth")} className="text-base px-8">
+          <Button size="lg" onClick={() => navigate("/get-started")} className="text-base px-8">
             Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="text-base px-8">

@@ -36,7 +36,8 @@ const trainerNav = [
 const staffNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Members", url: "/members", icon: Users },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Add Member", url: "/members/new", icon: UserPlus },
+  { title: "Attendance", url: "/attendance", icon: CalendarCheck },
 ];
 
 export function AppSidebar() {
