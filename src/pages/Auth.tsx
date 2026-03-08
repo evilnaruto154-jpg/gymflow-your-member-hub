@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,10 @@ type AuthMode = "login" | "signup" | "forgot";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [searchParams] = useSearchParams();
+  const selectedRole = searchParams.get("role") as "owner" | "staff" | null;
+  const [mode, setMode] = useState<AuthMode>(selectedRole ? "signup" : "login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -51,15 +54,19 @@ const Auth = () => {
       return;
     }
 
-    const { error } = mode === "login"
-      ? await signIn(email, password)
-      : await signUp(email, password);
-
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else if (mode === "signup") {
-      toast({ title: "Account created!", description: "Check your email to verify your account." });
-      setMode("login");
+    if (mode === "signup") {
+      const { error } = await signUp(email, password, name, selectedRole || "owner");
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Account created!", description: "Check your email to verify your account." });
+        setMode("login");
+      }
+    } else {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
     }
 
     setSubmitting(false);
@@ -76,7 +83,8 @@ const Auth = () => {
     }
   };
 
-  const title = mode === "forgot" ? "Reset Password" : mode === "login" ? "Welcome back" : "Create account";
+  const roleLabel = selectedRole === "staff" ? "Staff" : "Owner";
+  const title = mode === "forgot" ? "Reset Password" : mode === "login" ? "Welcome back" : `Create ${roleLabel} Account`;
   const desc = mode === "forgot" ? "Enter your email to receive a reset link" : mode === "login" ? "Sign in to manage your gym" : "Start your 7-day free trial";
 
   return (
@@ -125,6 +133,12 @@ const Auth = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="owner@gym.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
