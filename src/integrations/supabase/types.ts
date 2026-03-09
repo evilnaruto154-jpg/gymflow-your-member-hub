@@ -82,6 +82,7 @@ export type Database = {
           created_at: string
           id: string
           item_name: string
+          purchase_date: string | null
           purchase_price: number
           quantity: number
           reorder_level: number
@@ -95,6 +96,7 @@ export type Database = {
           created_at?: string
           id?: string
           item_name: string
+          purchase_date?: string | null
           purchase_price?: number
           quantity?: number
           reorder_level?: number
@@ -108,6 +110,7 @@ export type Database = {
           created_at?: string
           id?: string
           item_name?: string
+          purchase_date?: string | null
           purchase_price?: number
           quantity?: number
           reorder_level?: number
@@ -129,6 +132,7 @@ export type Database = {
           phone: string
           plan: string
           start_date: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -142,6 +146,7 @@ export type Database = {
           phone: string
           plan?: string
           start_date?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -155,6 +160,7 @@ export type Database = {
           phone?: string
           plan?: string
           start_date?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
@@ -194,6 +200,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          gym_name: string | null
           id: string
           name: string | null
           razorpay_customer_id: string | null
@@ -208,6 +215,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          gym_name?: string | null
           id: string
           name?: string | null
           razorpay_customer_id?: string | null
@@ -222,6 +230,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          gym_name?: string | null
           id?: string
           name?: string | null
           razorpay_customer_id?: string | null
@@ -242,6 +251,7 @@ export type Database = {
           id: string
           owner_id: string
           phone: string
+          specialization: string | null
           status: string
           trainer_email: string
           trainer_name: string
@@ -253,6 +263,7 @@ export type Database = {
           id?: string
           owner_id: string
           phone?: string
+          specialization?: string | null
           status?: string
           trainer_email: string
           trainer_name: string
@@ -264,6 +275,7 @@ export type Database = {
           id?: string
           owner_id?: string
           phone?: string
+          specialization?: string | null
           status?: string
           trainer_email?: string
           trainer_name?: string
