@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Dumbbell, Crown, Users, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,7 +18,7 @@ const roles: { id: SelectedRole; title: string; desc: string; img: string; icon:
   },
   {
     id: "staff",
-    title: "Gym Staff",
+    title: "Trainer / Staff",
     desc: "Trainer / Reception • limited access",
     img: gymStaffImg,
     icon: Users,
@@ -26,14 +26,21 @@ const roles: { id: SelectedRole; title: string; desc: string; img: string; icon:
 ];
 
 const RoleSelection = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<SelectedRole | null>(null);
   const [hovering, setHovering] = useState<SelectedRole | null>(null);
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   if (user) {
-    navigate("/dashboard");
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleContinue = () => {
