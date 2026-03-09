@@ -60,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/");
+    // Clear all cached queries so stale data doesn't persist
+    queryClient.clear();
+    navigate("/", { replace: true });
   };
 
   return (
