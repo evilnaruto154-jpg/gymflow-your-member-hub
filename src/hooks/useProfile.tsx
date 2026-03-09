@@ -6,6 +6,7 @@ export interface Profile {
   id: string;
   email: string | null;
   name: string | null;
+  gym_name: string | null;
   trial_start_date: string;
   trial_end_date: string;
   trial_used: boolean;
