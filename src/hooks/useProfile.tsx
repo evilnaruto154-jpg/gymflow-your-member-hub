@@ -15,6 +15,7 @@ export interface Profile {
   subscription_end_date: string | null;
   razorpay_customer_id: string | null;
   razorpay_subscription_id: string | null;
+  login_provider: string | null;
   created_at: string;
 }
 

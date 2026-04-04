@@ -243,6 +243,7 @@ export type Database = {
           email: string | null
           gym_name: string | null
           id: string
+          login_provider: string | null
           name: string | null
           razorpay_customer_id: string | null
           razorpay_subscription_id: string | null
@@ -258,6 +259,7 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id: string
+          login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
@@ -273,6 +275,7 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id?: string
+          login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
@@ -350,6 +353,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_profiles: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string | null
+          gym_name: string | null
+          id: string
+          login_provider: string | null
+          name: string | null
+          razorpay_customer_id: string | null
+          razorpay_subscription_id: string | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_status: string
+          trial_end_date: string | null
+          trial_start_date: string | null
+          trial_used: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_update_profile: {
+        Args: { new_plan?: string; new_status: string; target_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

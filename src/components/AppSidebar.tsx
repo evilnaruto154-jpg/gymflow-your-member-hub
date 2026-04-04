@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard,
-  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog
+  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog, Shield
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { NavLink } from "@/components/NavLink";
@@ -13,6 +13,8 @@ import {
   SidebarFooter, SidebarHeader, useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+
+const MASTER_EMAIL = "mullahusen999@gmail.com";
 
 const ownerNavBase = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -48,8 +50,13 @@ export function AppSidebar() {
   const { profile } = useProfile();
 
   const isPro = profile?.subscription_plan?.includes("pro") || false;
+  const isMaster = user?.email === MASTER_EMAIL;
   const ownerNav = ownerNavBase.filter((item) => !("proOnly" in item) || isPro);
   const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
+  // Add admin link for master admin
+  const finalNav = isMaster
+    ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
+    : navItems;
 
   const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
   const roleColor = isOwner ? "bg-primary/15 text-primary border-primary/30" : "bg-secondary text-secondary-foreground border-border";
@@ -70,7 +77,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {finalNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
