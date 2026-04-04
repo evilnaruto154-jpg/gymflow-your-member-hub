@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard,
-  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog
+  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog, Shield
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { NavLink } from "@/components/NavLink";
@@ -13,6 +13,8 @@ import {
   SidebarFooter, SidebarHeader, useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+
+const MASTER_EMAIL = "mullahusen999@gmail.com";
 
 const ownerNavBase = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },

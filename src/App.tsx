@@ -20,6 +20,7 @@ import ExpensesPage from "./pages/ExpensesPage";
 import InventoryPage from "./pages/InventoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import TrainerManagement from "./pages/TrainerManagement";
+import AdminPanel from "./pages/AdminPanel";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,9 @@ function SubscriptionGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // If profile doesn't exist yet (Google OAuth race), allow access briefly
+  if (!profileQuery.data) return <>{children}</>;
+
   if (!hasAccess) return <Navigate to="/subscription" replace />;
   return <>{children}</>;
 }
@@ -76,6 +80,7 @@ const App = () => (
                 }
               >
                 <Route path="/subscription" element={<Subscription />} />
+                <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
                 <Route path="/members" element={<SubscriptionGate><Members /></SubscriptionGate>} />
                 <Route path="/members/new" element={<SubscriptionGate><MemberForm /></SubscriptionGate>} />
