@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,20 +18,29 @@ import { Search, Shield, Users, Crown, Ban, CheckCircle, XCircle } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
-interface AdminProfile {
-  id: string;
-  email: string | null;
-  name: string | null;
-  gym_name: string | null;
+const MASTER_EMAIL = "mullahusen999@gmail.com";
+
+function getUserPlanLabel(user: {
   subscription_status: string;
   subscription_plan: string | null;
   trial_end_date: string | null;
   trial_used: boolean;
-  login_provider: string | null;
-  created_at: string;
-}
+}) {
+  const now = new Date();
+  const trialEnd = user.trial_end_date ? new Date(user.trial_end_date) : null;
 
-const MASTER_EMAIL = "mullahusen999@gmail.com";
+  if (user.subscription_status === "active" && user.subscription_plan) {
+    return user.subscription_plan.replace("_", " ");
+  }
+  if (user.subscription_status === "blocked") {
+    return "Blocked";
+  }
+  if (user.subscription_status === "trialing" && trialEnd && now < trialEnd) {
+    const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return `Trial (${daysLeft}d left)`;
+  }
+  return "Free User";
+}
 
 const AdminPanel = () => {
   const { user } = useAuth();
@@ -40,36 +49,24 @@ const AdminPanel = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Only master admin can access
   const isMaster = user?.email === MASTER_EMAIL;
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      // Use an edge function or direct query - since we're master admin with RLS on own profile only,
-      // we query via a function. For now, we'll use the profiles table with a special approach.
-      // The master admin's RLS only allows seeing own profile, so we need an edge function.
-      // As a workaround, let's create a DB function for admin access.
-      const { data, error } = await supabase.rpc("admin_list_profiles" as any);
+      const { data, error } = await supabase.rpc("admin_list_profiles");
       if (error) throw error;
-      return (data ?? []) as AdminProfile[];
+      return data ?? [];
     },
     enabled: isMaster,
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ userId, status, plan }: { userId: string; status: string; plan?: string | null }) => {
-      const updates: Record<string, any> = { subscription_status: status };
-      if (plan !== undefined) updates.subscription_plan = plan;
-      if (status === "active" && !plan) updates.subscription_plan = "pro_monthly";
-      if (status === "expired" || status === "blocked") {
-        updates.trial_used = true;
-      }
-
-      const { error } = await supabase.rpc("admin_update_profile" as any, {
+      const { error } = await supabase.rpc("admin_update_profile", {
         target_user_id: userId,
-        new_status: updates.subscription_status,
-        new_plan: updates.subscription_plan || null,
+        new_status: status,
+        new_plan: plan ?? undefined,
       });
       if (error) throw error;
     },
@@ -77,7 +74,7 @@ const AdminPanel = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast({ title: "Updated", description: "User status updated successfully." });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
@@ -94,7 +91,7 @@ const AdminPanel = () => {
 
   const users = usersQuery.data ?? [];
   const filtered = users.filter((u) => {
-    const matchSearch = !search || 
+    const matchSearch = !search ||
       u.email?.toLowerCase().includes(search.toLowerCase()) ||
       u.name?.toLowerCase().includes(search.toLowerCase()) ||
       u.gym_name?.toLowerCase().includes(search.toLowerCase());
@@ -106,10 +103,10 @@ const AdminPanel = () => {
     total: users.length,
     active: users.filter((u) => u.subscription_status === "active").length,
     trialing: users.filter((u) => u.subscription_status === "trialing").length,
-    expired: users.filter((u) => u.subscription_status === "expired").length,
+    expired: users.filter((u) => u.subscription_status === "expired" || (!u.subscription_plan && u.trial_used)).length,
   };
 
-  const statusBadge = (status: string) => {
+  const statusBadgeClass = (status: string) => {
     const styles: Record<string, string> = {
       active: "bg-success/15 text-success border-success/30",
       trialing: "bg-warning/15 text-warning border-warning/30",
@@ -135,7 +132,7 @@ const AdminPanel = () => {
           { label: "Total Users", value: stats.total, icon: Users, color: "text-primary" },
           { label: "Active", value: stats.active, icon: CheckCircle, color: "text-success" },
           { label: "Trialing", value: stats.trialing, icon: Crown, color: "text-warning" },
-          { label: "Expired", value: stats.expired, icon: XCircle, color: "text-destructive" },
+          { label: "Expired / Free", value: stats.expired, icon: XCircle, color: "text-destructive" },
         ].map((s) => (
           <Card key={s.label} className="border-border bg-card">
             <CardContent className="py-4 flex items-center gap-3">
@@ -170,62 +167,75 @@ const AdminPanel = () => {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>User</TableHead>
               <TableHead className="hidden md:table-cell">Gym</TableHead>
-              <TableHead className="hidden sm:table-cell">Provider</TableHead>
+              <TableHead>Provider</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Plan</TableHead>
+              <TableHead>Plan</TableHead>
               <TableHead className="hidden lg:table-cell">Joined</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usersQuery.isLoading && (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                    Loading users...
+                  </div>
+                </TableCell>
+              </TableRow>
             )}
             {usersQuery.isError && (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-destructive">
-                Failed to load users. Make sure admin functions are deployed.
-              </TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-destructive">
+                  Failed to load users: {(usersQuery.error as Error)?.message}
+                </TableCell>
+              </TableRow>
             )}
             {!usersQuery.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No users found</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No users found</TableCell>
+              </TableRow>
             )}
             {filtered.map((u) => (
               <TableRow key={u.id} className="hover:bg-muted/30">
                 <TableCell>
-                  <div>
-                    <p className="font-medium text-foreground">{u.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{u.name || "—"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-muted-foreground">{u.gym_name || "—"}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Badge variant="outline" className="text-xs">
+                <TableCell>
+                  <Badge variant="outline" className="text-xs whitespace-nowrap">
                     {u.login_provider || "email"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={statusBadge(u.subscription_status)}>
+                  <Badge variant="outline" className={`${statusBadgeClass(u.subscription_status)} whitespace-nowrap`}>
                     {u.subscription_status}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden md:table-cell text-muted-foreground capitalize">
-                  {u.subscription_plan?.replace("_", " ") || "—"}
+                <TableCell>
+                  <span className="text-sm text-muted-foreground capitalize whitespace-nowrap">
+                    {getUserPlanLabel(u)}
+                  </span>
                 </TableCell>
-                <TableCell className="hidden lg:table-cell text-muted-foreground">
+                <TableCell className="hidden lg:table-cell text-muted-foreground whitespace-nowrap">
                   {format(new Date(u.created_at), "dd MMM yyyy")}
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-1 flex-nowrap">
                     {u.subscription_status !== "active" && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="text-xs">
+                          <Button size="sm" variant="outline" className="text-xs whitespace-nowrap">
                             <CheckCircle className="h-3 w-3 mr-1" /> Activate
                           </Button>
                         </AlertDialogTrigger>
@@ -248,7 +258,7 @@ const AdminPanel = () => {
                     {u.subscription_status !== "blocked" && u.email !== MASTER_EMAIL && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="text-xs text-destructive">
+                          <Button size="sm" variant="outline" className="text-xs text-destructive whitespace-nowrap">
                             <Ban className="h-3 w-3 mr-1" /> Block
                           </Button>
                         </AlertDialogTrigger>
