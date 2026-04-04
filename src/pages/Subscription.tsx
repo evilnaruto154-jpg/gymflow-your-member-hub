@@ -95,9 +95,37 @@ const Subscription = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+      {/* Active Trial Banner — prominent when trial is active */}
+      {isTrialing && !trialExpired && (
+        <Card className="border-success/30 bg-gradient-to-r from-success/5 to-success/10">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-8 w-8 text-success" />
+              <div>
+                <p className="font-display font-bold text-lg text-foreground">
+                  🎉 Your 7-Day FREE Trial is Active!
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining — enjoy full PRO access
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-display text-foreground">Choose Your Plan</h1>
-        <p className="text-muted-foreground mt-2">Unlock the full potential of GymFlow Pro</p>
+        <h1 className="text-3xl font-bold font-display text-foreground">
+          {isTrialing && !trialExpired ? "You Have Full Access" : "Choose Your Plan"}
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {isTrialing && !trialExpired
+            ? "Your trial includes all PRO features. Subscribe anytime before it ends."
+            : "Unlock the full potential of GymFlow Pro"}
+        </p>
         <Badge variant="outline" className={`mt-3 ${statusBadge.className}`}>
           {statusBadge.label}
         </Badge>
