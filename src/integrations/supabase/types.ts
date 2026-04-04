@@ -243,6 +243,7 @@ export type Database = {
           email: string | null
           gym_name: string | null
           id: string
+          login_provider: string | null
           name: string | null
           razorpay_customer_id: string | null
           razorpay_subscription_id: string | null
@@ -258,6 +259,7 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id: string
+          login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
@@ -273,6 +275,7 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id?: string
+          login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
           razorpay_subscription_id?: string | null
