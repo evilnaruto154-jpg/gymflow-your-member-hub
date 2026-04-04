@@ -50,8 +50,13 @@ export function AppSidebar() {
   const { profile } = useProfile();
 
   const isPro = profile?.subscription_plan?.includes("pro") || false;
+  const isMaster = user?.email === MASTER_EMAIL;
   const ownerNav = ownerNavBase.filter((item) => !("proOnly" in item) || isPro);
   const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
+  // Add admin link for master admin
+  const finalNav = isMaster
+    ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
+    : navItems;
 
   const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
   const roleColor = isOwner ? "bg-primary/15 text-primary border-primary/30" : "bg-secondary text-secondary-foreground border-border";
