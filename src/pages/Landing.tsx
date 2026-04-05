@@ -422,70 +422,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section id="testimonials" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 space-y-4">
-            <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">Testimonials</Badge>
-            <h2 className="text-3xl md:text-5xl font-bold font-display">
-              Loved by{" "}
-              <span className="gradient-text">Gym Owners</span>
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t) => (
-              <div key={t.name} className="glass rounded-2xl p-6 hover:glow-green transition-all duration-300 hover:-translate-y-1">
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                  ))}
-                </div>
-                <p className="text-foreground/80 text-sm leading-relaxed mb-6">"{t.review}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.gym}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ── CTA ── */}
-      <section className="py-24 px-6 relative">
-        <div className="absolute inset-0 bg-primary/3 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[150px] pointer-events-none" />
-        <div className="max-w-3xl mx-auto text-center relative z-10 space-y-8">
-          <h2 className="text-3xl md:text-5xl font-bold font-display">
-            Ready to Transform{" "}
-            <span className="gradient-text text-glow-green">Your Gym?</span>
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Join 500+ gym owners who trust GymFlow to run their business. Start your free trial today.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              onClick={() => navigate("/get-started")}
-              className="text-base px-10 h-13 font-semibold glow-green-strong group"
-            >
-              Start Free Trial
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-10 h-13 border-border/50 hover:border-primary/30">
-              Book a Demo
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Free 7-day trial • No credit card required • Cancel anytime
-          </p>
-        </div>
-      </section>
 
       {/* ── FOOTER ── */}
       <footer className="border-t border-border/30 px-6 py-12">
