@@ -2,7 +2,7 @@ import { useProfile } from "@/hooks/useProfile";
 
 export type Feature = "members" | "whatsapp" | "attendance" | "expenses" | "reports" | "staff" | "trainers";
 
-const TRIAL_FEATURES: Feature[] = ["members", "whatsapp"];
+const TRIAL_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses"];
 const STARTER_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff"];
 const PRO_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff", "trainers"];
 
