@@ -49,22 +49,14 @@ const Landing = () => {
     { icon: TrendingUp, title: "Grow Faster", desc: "Data-driven decisions to increase retention and revenue." },
   ];
 
-  const testimonials = [
-    { name: "Rahul Sharma", gym: "Iron Paradise Gym", review: "GymFlow completely transformed how I manage my gym. Payments, attendance, everything is automated now.", rating: 5 },
-    { name: "Priya Patel", gym: "FitZone Studio", review: "The dashboard analytics helped me increase member retention by 40%. Best investment for my gym.", rating: 5 },
-    { name: "Vikram Singh", gym: "Power House Fitness", review: "I was spending hours on paperwork. Now GymFlow handles everything while I focus on training.", rating: 5 },
-  ];
-
   const plans = {
     monthly: [
-      { name: "Free", price: "₹0", period: "/month", features: ["Up to 25 members", "Basic attendance", "Manual payments", "Email support"], highlight: false },
-      { name: "Pro", price: "₹999", period: "/month", features: ["Unlimited members", "WhatsApp reminders", "Payment tracking", "Analytics dashboard", "Trainer management", "Priority support"], highlight: true },
-      { name: "Premium", price: "₹2,499", period: "/month", features: ["Everything in Pro", "Multi-branch support", "Custom branding", "API access", "Dedicated account manager", "24/7 phone support"], highlight: false },
+      { name: "Starter", price: "₹249", period: "/month", value: "starter_monthly", features: ["Up to 100 members", "WhatsApp reminders", "Expiry tracking", "Dashboard analytics"], highlight: false },
+      { name: "Pro", price: "₹449", period: "/month", value: "pro_monthly", features: ["Unlimited members", "Attendance tracking", "Expense management", "Reports & analytics", "Staff accounts", "Priority support"], highlight: true },
     ],
     yearly: [
-      { name: "Free", price: "₹0", period: "/year", features: ["Up to 25 members", "Basic attendance", "Manual payments", "Email support"], highlight: false },
-      { name: "Pro", price: "₹9,999", period: "/year", features: ["Unlimited members", "WhatsApp reminders", "Payment tracking", "Analytics dashboard", "Trainer management", "Priority support"], highlight: true },
-      { name: "Premium", price: "₹24,999", period: "/year", features: ["Everything in Pro", "Multi-branch support", "Custom branding", "API access", "Dedicated account manager", "24/7 phone support"], highlight: false },
+      { name: "Starter", price: "₹2,499", period: "/year", value: "starter_yearly", features: ["Up to 100 members", "WhatsApp reminders", "Expiry tracking", "Dashboard analytics"], highlight: false },
+      { name: "Pro", price: "₹4,499", period: "/year", value: "pro_yearly", features: ["Unlimited members", "Attendance tracking", "Expense management", "Reports & analytics", "Staff accounts", "Priority support"], highlight: true },
     ],
   };
 
@@ -83,7 +75,7 @@ const Landing = () => {
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#dashboard" className="hover:text-foreground transition-colors">Dashboard</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Reviews</a>
+            
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -352,30 +344,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── BENEFITS ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 space-y-4">
-            <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">Why GymFlow</Badge>
-            <h2 className="text-3xl md:text-5xl font-bold font-display">
-              Why Gym Owners{" "}
-              <span className="gradient-text">Love GymFlow</span>
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {benefits.map((b) => (
-              <div key={b.title} className="glass rounded-2xl p-6 text-center group hover:glow-green transition-all duration-300 hover:-translate-y-1">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <b.icon className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="text-base font-semibold font-display mb-2">{b.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── PRICING ── */}
       <section id="pricing" className="py-24 px-6 bg-grid relative">
         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-primary/4 blur-[120px] pointer-events-none" />
@@ -408,7 +376,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
             {plans[billingCycle].map((plan) => (
               <div
                 key={plan.name}
