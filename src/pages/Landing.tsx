@@ -40,12 +40,6 @@ const Landing = () => {
     { icon: Smartphone, title: "Mobile Friendly", desc: "Access your gym dashboard from any device, anywhere, anytime." },
   ];
 
-  const benefits = [
-    { icon: Clock, title: "Save 10+ Hours/Week", desc: "Automate membership renewals, reminders, and daily admin tasks." },
-    { icon: Zap, title: "Automate Memberships", desc: "Auto-assign plans, track expiry, send renewal reminders via WhatsApp." },
-    { icon: CreditCard, title: "Track Every Payment", desc: "Never miss a payment. Full history, dues, and receipt generation." },
-    { icon: TrendingUp, title: "Grow Faster", desc: "Data-driven decisions to increase retention and revenue." },
-  ];
 
   const plans = {
     monthly: [
