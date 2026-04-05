@@ -13,7 +13,7 @@ import {
   ArrowRight,
   Check,
   Zap,
-  Clock,
+  
   TrendingUp,
   Play,
   ChevronRight,
