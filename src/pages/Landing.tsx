@@ -116,6 +116,7 @@ const Landing = () => {
                 size="lg"
                 variant="outline"
                 className="text-base px-8 h-13 border-border/50 hover:border-primary/30 hover:bg-primary/5"
+                onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
               >
                 <Play className="mr-2 h-4 w-4" /> Watch Demo
               </Button>
