@@ -16,6 +16,9 @@ import {
   TrendingUp,
   Play,
   ChevronRight,
+  Package,
+  Shield,
+  Star,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
@@ -33,23 +36,50 @@ const Landing = () => {
 
   const features = [
     { icon: Users, title: "Member Management", desc: "Add, edit, and organize all your gym members effortlessly from one central hub." },
+    { icon: CalendarCheck, title: "Attendance Tracking", desc: "Monitor daily attendance with check-in tracking and detailed analytics." },
     { icon: CreditCard, title: "Payment Tracking", desc: "Track every payment, due, and invoice with automated reminders." },
-    { icon: CalendarCheck, title: "Attendance System", desc: "Monitor daily attendance with check-in tracking and attendance analytics." },
+    { icon: Package, title: "Inventory Management", desc: "Manage gym equipment, supplements, and supplies with smart stock alerts." },
     { icon: UserCog, title: "Trainer Management", desc: "Assign trainers, manage schedules, and track their performance." },
     { icon: BarChart3, title: "Analytics Dashboard", desc: "Get real-time insights into revenue, growth, and member retention." },
-    { icon: Smartphone, title: "Mobile Friendly", desc: "Access your gym dashboard from any device, anywhere, anytime." },
   ];
 
-
   const plans = {
-    monthly: PRICING_PLANS.map((p) => ({
-      name: p.name, price: p.monthlyPrice, period: "/month", value: p.monthlyValue,
-      features: p.features, highlight: p.popular,
-    })),
-    yearly: PRICING_PLANS.map((p) => ({
-      name: p.name, price: p.yearlyPrice, period: "/year", value: p.yearlyValue,
-      features: p.features, highlight: p.popular,
-    })),
+    monthly: [
+      {
+        name: "Free",
+        price: "₹0",
+        period: "/7 days",
+        features: ["Up to 50 members", "Dashboard access", "Attendance tracking", "Inventory management"],
+        highlight: false,
+        cta: "Start Free Trial",
+      },
+      ...PRICING_PLANS.map((p) => ({
+        name: p.name,
+        price: p.monthlyPrice,
+        period: "/month",
+        features: p.features,
+        highlight: p.popular,
+        cta: "Get Started",
+      })),
+    ],
+    yearly: [
+      {
+        name: "Free",
+        price: "₹0",
+        period: "/7 days",
+        features: ["Up to 50 members", "Dashboard access", "Attendance tracking", "Inventory management"],
+        highlight: false,
+        cta: "Start Free Trial",
+      },
+      ...PRICING_PLANS.map((p) => ({
+        name: p.name,
+        price: p.yearlyPrice,
+        period: "/year",
+        features: p.features,
+        highlight: p.popular,
+        cta: "Get Started",
+      })),
+    ],
   };
 
   return (
@@ -65,16 +95,15 @@ const Landing = () => {
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#dashboard" className="hover:text-foreground transition-colors">Dashboard</a>
+            <a href="#dashboard" className="hover:text-foreground transition-colors">Product</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button variant="ghost" onClick={() => navigate("/auth")} className="hidden sm:inline-flex text-muted-foreground hover:text-foreground">
               Login
             </Button>
-            <Button onClick={() => navigate("/get-started")} className="glow-green font-semibold">
+            <Button onClick={() => navigate("/auth")} className="glow-green font-semibold">
               Start Free Trial
             </Button>
           </div>
@@ -83,7 +112,6 @@ const Landing = () => {
 
       {/* ── HERO ── */}
       <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-6 bg-grid">
-        {/* Glow orbs */}
         <div className="absolute top-20 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/3 blur-[100px] pointer-events-none" />
 
@@ -91,25 +119,25 @@ const Landing = () => {
           {/* Left */}
           <div className="space-y-8">
             <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm font-medium">
-              <Zap className="h-3.5 w-3.5 mr-1.5" /> 7-day free trial • No card required
+              <Zap className="h-3.5 w-3.5 mr-1.5" /> 7-day free trial • No credit card required
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold font-display leading-[1.1] tracking-tight">
-              Run Your Gym{" "}
-              <span className="gradient-text text-glow-green">Like a Pro.</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold font-display leading-[1.08] tracking-tight">
+              Run Your Entire Gym{" "}
+              <span className="gradient-text text-glow-green">From One Dashboard.</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              Manage members, track payments, automate plans, and grow your gym — all from one powerful dashboard.
+              Manage members, track payments, monitor attendance, and grow your gym with GymFlow.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                onClick={() => navigate("/get-started")}
+                onClick={() => navigate("/auth")}
                 className="text-base px-8 h-13 font-semibold glow-green-strong group"
               >
-                Start Free Trial
+                Start 7-Day Free Trial
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button
@@ -118,7 +146,7 @@ const Landing = () => {
                 className="text-base px-8 h-13 border-border/50 hover:border-primary/30 hover:bg-primary/5"
                 onClick={() => document.getElementById("dashboard")?.scrollIntoView({ behavior: "smooth" })}
               >
-                <Play className="mr-2 h-4 w-4" /> Watch Demo
+                <Play className="mr-2 h-4 w-4" /> View Dashboard
               </Button>
             </div>
 
@@ -133,14 +161,12 @@ const Landing = () => {
           <div className="relative">
             <div className="glass-strong rounded-2xl p-1 glow-green">
               <div className="bg-card rounded-xl overflow-hidden">
-                {/* Title bar */}
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50">
                   <div className="w-3 h-3 rounded-full bg-destructive/70" />
                   <div className="w-3 h-3 rounded-full bg-warning/70" />
                   <div className="w-3 h-3 rounded-full bg-primary/70" />
                   <span className="ml-3 text-xs text-muted-foreground font-mono">GymFlow Dashboard</span>
                 </div>
-                {/* Dashboard content */}
                 <div className="p-5 space-y-4">
                   <div className="grid grid-cols-3 gap-3">
                     {[
@@ -155,7 +181,6 @@ const Landing = () => {
                       </div>
                     ))}
                   </div>
-                  {/* Chart placeholder */}
                   <div className="glass rounded-xl p-4">
                     <p className="text-xs text-muted-foreground mb-3">Membership Growth</p>
                     <div className="flex items-end gap-1.5 h-20">
@@ -168,7 +193,6 @@ const Landing = () => {
                       ))}
                     </div>
                   </div>
-                  {/* Recent members */}
                   <div className="glass rounded-xl p-4 space-y-2.5">
                     <p className="text-xs text-muted-foreground">Recent Members</p>
                     {["Arjun K.", "Sneha M.", "Ravi P."].map((name, i) => (
@@ -188,7 +212,6 @@ const Landing = () => {
                 </div>
               </div>
             </div>
-            {/* Floating card */}
             <div className="absolute -bottom-6 -left-6 glass-strong rounded-xl p-3 glow-green animate-fade-in hidden lg:flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
                 <TrendingUp className="h-4 w-4 text-primary" />
@@ -231,14 +254,14 @@ const Landing = () => {
               Powerful tools designed specifically for gym owners who want simplicity and control.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((f) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f, idx) => (
               <div
                 key={f.title}
-                className="glass rounded-2xl p-6 group hover:glow-green transition-all duration-300 hover:-translate-y-1"
+                className="glass rounded-2xl p-7 group hover:glow-green transition-all duration-300 hover:-translate-y-1.5 hover:bg-card/50"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <f.icon className="h-6 w-6 text-primary" />
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                  <f.icon className="h-7 w-7 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold font-display mb-2">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
@@ -248,12 +271,12 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── DASHBOARD PREVIEW ── */}
+      {/* ── PRODUCT SHOWCASE / DASHBOARD PREVIEW ── */}
       <section id="dashboard" className="py-24 px-6 bg-grid relative">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/4 blur-[120px] pointer-events-none" />
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16 space-y-4">
-            <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">Dashboard</Badge>
+            <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">Product</Badge>
             <h2 className="text-3xl md:text-5xl font-bold font-display">
               A Dashboard That{" "}
               <span className="gradient-text">Feels Powerful</span>
@@ -262,6 +285,7 @@ const Landing = () => {
               Get a bird's-eye view of your entire gym. Revenue, members, attendance — everything at a glance.
             </p>
           </div>
+
           {/* Large dashboard preview */}
           <div className="glass-strong rounded-2xl p-1 glow-green max-w-5xl mx-auto">
             <div className="bg-card rounded-xl overflow-hidden">
@@ -283,7 +307,7 @@ const Landing = () => {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm ${
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                         item.active ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground"
                       }`}
                     >
@@ -292,42 +316,111 @@ const Landing = () => {
                     </div>
                   ))}
                 </div>
-                {/* Main */}
+                {/* Main content */}
                 <div className="flex-1 p-5 space-y-4">
+                  {/* Stats row */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                      { label: "Total Members", value: "1,247" },
-                      { label: "Monthly Revenue", value: "₹4,82,000" },
-                      { label: "Active Plans", value: "1,089" },
-                      { label: "Today's Attendance", value: "312" },
+                      { label: "Total Members", value: "1,247", trend: "+12%" },
+                      { label: "Monthly Revenue", value: "₹4,82,000", trend: "+23%" },
+                      { label: "Active Plans", value: "1,089", trend: "+8%" },
+                      { label: "Today's Attendance", value: "312", trend: "+5%" },
                     ].map((s) => (
                       <div key={s.label} className="glass rounded-xl p-3.5">
                         <p className="text-[11px] text-muted-foreground">{s.label}</p>
                         <p className="text-lg font-bold font-display mt-1">{s.value}</p>
+                        <p className="text-[10px] text-primary font-medium mt-0.5">{s.trend}</p>
                       </div>
                     ))}
                   </div>
+                  {/* Charts & table row */}
                   <div className="grid md:grid-cols-2 gap-4">
+                    {/* Revenue chart */}
                     <div className="glass rounded-xl p-4">
                       <p className="text-xs text-muted-foreground mb-3">Revenue (6 months)</p>
-                      <div className="flex items-end gap-2 h-24">
+                      <div className="flex items-end gap-2 h-28">
                         {[45, 55, 50, 70, 65, 85].map((h, i) => (
-                          <div key={i} className="flex-1 rounded-md bg-primary/25" style={{ height: `${h}%` }} />
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                            <div
+                              className="w-full rounded-md bg-gradient-to-t from-primary/40 to-primary/20 hover:from-primary/60 hover:to-primary/30 transition-colors"
+                              style={{ height: `${h}%` }}
+                            />
+                            <span className="text-[9px] text-muted-foreground">
+                              {["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i]}
+                            </span>
+                          </div>
                         ))}
                       </div>
                     </div>
-                    <div className="glass rounded-xl p-4 space-y-2">
-                      <p className="text-xs text-muted-foreground">Recent Payments</p>
-                      {[
-                        { name: "Arjun K.", amount: "₹2,500" },
-                        { name: "Sneha M.", amount: "₹1,800" },
-                        { name: "Ravi P.", amount: "₹3,200" },
-                      ].map((p) => (
-                        <div key={p.name} className="flex items-center justify-between text-sm">
-                          <span className="text-foreground/70">{p.name}</span>
-                          <span className="text-primary font-semibold text-xs">{p.amount}</span>
+                    {/* Attendance chart */}
+                    <div className="glass rounded-xl p-4">
+                      <p className="text-xs text-muted-foreground mb-3">Attendance (Weekly)</p>
+                      <div className="flex items-end gap-2 h-28">
+                        {[70, 85, 75, 90, 80, 60, 45].map((h, i) => (
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                            <div
+                              className="w-full rounded-md bg-gradient-to-t from-primary/30 to-primary/15 hover:from-primary/50 hover:to-primary/25 transition-colors"
+                              style={{ height: `${h}%` }}
+                            />
+                            <span className="text-[9px] text-muted-foreground">
+                              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Members table + Recent activity */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="glass rounded-xl p-4">
+                      <p className="text-xs text-muted-foreground mb-3">Members</p>
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 text-[10px] text-muted-foreground font-medium uppercase tracking-wider pb-1 border-b border-border/30">
+                          <span>Name</span><span>Plan</span><span className="text-right">Status</span>
                         </div>
-                      ))}
+                        {[
+                          { name: "Arjun K.", plan: "Pro", status: "Active" },
+                          { name: "Sneha M.", plan: "Starter", status: "Active" },
+                          { name: "Ravi P.", plan: "Pro", status: "Expiring" },
+                          { name: "Priya S.", plan: "Starter", status: "Active" },
+                        ].map((m) => (
+                          <div key={m.name} className="grid grid-cols-3 text-sm items-center">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center text-[9px] font-bold text-primary">
+                                {m.name[0]}
+                              </div>
+                              <span className="text-foreground/80 text-xs">{m.name}</span>
+                            </div>
+                            <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-0 w-fit">
+                              {m.plan}
+                            </Badge>
+                            <span className={`text-[10px] text-right font-medium ${m.status === "Expiring" ? "text-warning" : "text-primary"}`}>
+                              {m.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="glass rounded-xl p-4">
+                      <p className="text-xs text-muted-foreground mb-3">Recent Activity</p>
+                      <div className="space-y-3">
+                        {[
+                          { text: "Arjun K. checked in", time: "2 min ago", icon: CalendarCheck },
+                          { text: "Payment received ₹2,500", time: "15 min ago", icon: CreditCard },
+                          { text: "New member: Priya S.", time: "1 hr ago", icon: Users },
+                          { text: "Inventory restocked", time: "3 hr ago", icon: Package },
+                        ].map((a) => (
+                          <div key={a.text} className="flex items-center gap-3 text-sm">
+                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <a.icon className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-foreground/80 truncate">{a.text}</p>
+                              <p className="text-[10px] text-muted-foreground">{a.time}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -338,10 +431,10 @@ const Landing = () => {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="py-24 px-6 bg-grid relative">
+      <section id="pricing" className="py-24 px-6 relative">
         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full bg-primary/4 blur-[120px] pointer-events-none" />
         <div className="max-w-5xl mx-auto relative z-10">
-          <div className="text-center mb-12 space-y-4">
+          <div className="text-center mb-14 space-y-4">
             <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">Pricing</Badge>
             <h2 className="text-3xl md:text-5xl font-bold font-display">
               Simple, Transparent{" "}
@@ -349,7 +442,7 @@ const Landing = () => {
             </h2>
             <p className="text-muted-foreground text-lg">Start free. Upgrade when you're ready.</p>
             {/* Toggle */}
-            <div className="inline-flex items-center gap-3 glass rounded-full p-1.5 mt-4">
+            <div className="inline-flex items-center gap-1 glass rounded-full p-1.5 mt-4">
               <button
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
@@ -369,20 +462,20 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {plans[billingCycle].map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 ${
+                className={`rounded-2xl p-7 flex flex-col transition-all duration-300 hover:-translate-y-1.5 ${
                   plan.highlight
-                    ? "glass-strong glow-green-strong border-primary/30 relative"
-                    : "glass"
+                    ? "glass-strong glow-green-strong border border-primary/30 relative scale-[1.03]"
+                    : "glass hover:glow-green"
                 }`}
               >
                 {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                     <Badge className="bg-primary text-primary-foreground px-4 py-1 text-xs font-bold shadow-lg">
-                      MOST POPULAR
+                      <Star className="h-3 w-3 mr-1" /> MOST POPULAR
                     </Badge>
                   </div>
                 )}
@@ -402,11 +495,11 @@ const Landing = () => {
                   ))}
                 </div>
                 <Button
-                  className={`w-full mt-6 font-semibold ${plan.highlight ? "glow-green" : ""}`}
+                  className={`w-full mt-8 font-semibold transition-all duration-300 ${plan.highlight ? "glow-green hover:glow-green-strong" : "hover:bg-primary hover:text-primary-foreground"}`}
                   variant={plan.highlight ? "default" : "outline"}
                   onClick={() => navigate("/auth")}
                 >
-                  {plan.name === "Free" ? "Get Started" : "Start Free Trial"}
+                  {plan.cta}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
@@ -415,7 +508,40 @@ const Landing = () => {
         </div>
       </section>
 
-
+      {/* ── TRIAL CTA ── */}
+      <section className="py-24 px-6 relative">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="glass-strong rounded-3xl p-10 md:p-16 text-center glow-green-strong relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+            <div className="relative z-10 space-y-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 mb-2">
+                <Shield className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold font-display">
+                Start Your 7-Day Free Trial
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+                No credit card required. Get full access to Dashboard, Members, Attendance, and Inventory — completely free for 7 days.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="text-base px-10 h-13 font-semibold glow-green-strong group"
+                >
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
+              <div className="flex items-center justify-center gap-6 pt-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No credit card</div>
+                <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Full access</div>
+                <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Cancel anytime</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── FOOTER ── */}
       <footer className="border-t border-border/30 px-6 py-12">
