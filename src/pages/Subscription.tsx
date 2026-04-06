@@ -7,39 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-
-const plans = [
-  {
-    name: "Starter",
-    monthlyPrice: "₹249",
-    yearlyPrice: "₹2,499",
-    monthlyValue: "starter_monthly",
-    yearlyValue: "starter_yearly",
-    popular: false,
-    features: [
-      "Up to 100 members",
-      "WhatsApp reminders",
-      "Expiry tracking",
-      "Dashboard analytics",
-    ],
-  },
-  {
-    name: "Pro",
-    monthlyPrice: "₹449",
-    yearlyPrice: "₹4,499",
-    monthlyValue: "pro_monthly",
-    yearlyValue: "pro_yearly",
-    popular: true,
-    features: [
-      "Unlimited members",
-      "Attendance tracking",
-      "Expense management",
-      "Reports & analytics",
-      "Staff accounts",
-      "Priority support",
-    ],
-  },
-];
+import { PRICING_PLANS, YEARLY_DISCOUNT_LABEL } from "@/lib/pricing";
 
 const Subscription = () => {
   const { profile, isActive, isTrialing, trialDaysLeft, trialExpired, updateProfile } = useProfile();
@@ -157,15 +125,15 @@ const Subscription = () => {
           Yearly
         </span>
         {isYearly && (
-          <Badge variant="secondary" className="bg-primary/15 text-primary border-primary/30 text-xs">
-            Save 20%
+         <Badge variant="secondary" className="bg-primary/15 text-primary border-primary/30 text-xs">
+            {YEARLY_DISCOUNT_LABEL}
           </Badge>
         )}
       </div>
 
       {/* Pricing Grid */}
       <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        {plans.map((plan) => {
+        {PRICING_PLANS.map((plan) => {
           const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
           const period = isYearly ? "/year" : "/month";
           const value = isYearly ? plan.yearlyValue : plan.monthlyValue;

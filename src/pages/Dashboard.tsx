@@ -142,8 +142,8 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Overview of your gym</p>
         </div>
         {isTrialing && (
-          <Badge variant="outline" className="bg-warning/15 text-warning border-warning/30">
-            Trial — {trialDaysLeft} days left
+          <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 px-4 py-1.5 text-sm font-semibold">
+            Trial Plan – {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Remaining
           </Badge>
         )}
       </div>

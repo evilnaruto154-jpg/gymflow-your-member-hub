@@ -13,13 +13,13 @@ import {
   ArrowRight,
   Check,
   Zap,
-  
   TrendingUp,
   Play,
   ChevronRight,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState } from "react";
+import { PRICING_PLANS, YEARLY_DISCOUNT_LABEL } from "@/lib/pricing";
 
 const Landing = () => {
   const { user } = useAuth();
@@ -42,14 +42,14 @@ const Landing = () => {
 
 
   const plans = {
-    monthly: [
-      { name: "Starter", price: "₹249", period: "/month", value: "starter_monthly", features: ["Up to 100 members", "WhatsApp reminders", "Expiry tracking", "Dashboard analytics"], highlight: false },
-      { name: "Pro", price: "₹449", period: "/month", value: "pro_monthly", features: ["Unlimited members", "Attendance tracking", "Expense management", "Reports & analytics", "Staff accounts", "Priority support"], highlight: true },
-    ],
-    yearly: [
-      { name: "Starter", price: "₹2,499", period: "/year", value: "starter_yearly", features: ["Up to 100 members", "WhatsApp reminders", "Expiry tracking", "Dashboard analytics"], highlight: false },
-      { name: "Pro", price: "₹4,499", period: "/year", value: "pro_yearly", features: ["Unlimited members", "Attendance tracking", "Expense management", "Reports & analytics", "Staff accounts", "Priority support"], highlight: true },
-    ],
+    monthly: PRICING_PLANS.map((p) => ({
+      name: p.name, price: p.monthlyPrice, period: "/month", value: p.monthlyValue,
+      features: p.features, highlight: p.popular,
+    })),
+    yearly: PRICING_PLANS.map((p) => ({
+      name: p.name, price: p.yearlyPrice, period: "/year", value: p.yearlyValue,
+      features: p.features, highlight: p.popular,
+    })),
   };
 
   return (
@@ -363,7 +363,7 @@ const Landing = () => {
                   billingCycle === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Yearly <span className="text-[11px] ml-1 opacity-70">Save 16%</span>
+                Yearly <span className="text-[11px] ml-1 opacity-70">{YEARLY_DISCOUNT_LABEL}</span>
               </button>
             </div>
           </div>
