@@ -133,7 +133,7 @@ const Subscription = () => {
 
       {/* Pricing Grid */}
       <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-        {plans.map((plan) => {
+        {PRICING_PLANS.map((plan) => {
           const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
           const period = isYearly ? "/year" : "/month";
           const value = isYearly ? plan.yearlyValue : plan.monthlyValue;
