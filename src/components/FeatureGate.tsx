@@ -20,7 +20,7 @@ export function FeatureGate({ feature, children }: FeatureGateProps) {
         </div>
         <h2 className="text-xl font-bold font-display text-foreground">Feature Locked</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          This feature requires an active subscription. Upgrade your plan to unlock full access.
+          Your 7-day trial has expired. Please upgrade to continue using this feature.
         </p>
         <Button onClick={() => navigate("/subscription")}>Upgrade Now</Button>
       </div>
