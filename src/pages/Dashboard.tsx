@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, UserCheck, UserPlus, AlertTriangle, TrendingUp, IndianRupee,
-  Clock, CreditCard, Package, ArrowRight, UserCog, Activity
+  Clock, CreditCard, Package, ArrowRight, UserCog, Activity, CalendarCheck
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
