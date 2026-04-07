@@ -10,24 +10,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, UserCheck, UserPlus, AlertTriangle, TrendingUp, IndianRupee,
-  Clock, CreditCard, Package, ArrowRight, UserCog
+  Clock, CreditCard, Package, ArrowRight, UserCog, Activity
 } from "lucide-react";
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { DashboardAlerts } from "@/components/DashboardAlerts";
 import { useNavigate } from "react-router-dom";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--warning))", "hsl(var(--destructive))", "hsl(142 50% 60%)", "hsl(220 70% 55%)"];
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 const Dashboard = () => {
   const { membersQuery } = useMembers();
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
   const { activeTrainers, trainers: allTrainers } = useTrainers();
-  const { isTrialing, trialDaysLeft, profile } = useProfile();
+  const { isTrialing, trialDaysLeft, profile, isActive, trialExpired } = useProfile();
   const { isOwner } = useRole();
   const navigate = useNavigate();
   const members = membersQuery.data ?? [];
@@ -64,7 +64,6 @@ const Dashboard = () => {
 
   const netProfit = monthlyRevenue - monthlyExpenses;
 
-  // Revenue vs Expense chart data
   const revenueExpenseData = useMemo(() => {
     const months: { month: string; revenue: number; expenses: number }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -93,7 +92,6 @@ const Dashboard = () => {
     return months;
   }, [members]);
 
-  // Plan distribution
   const planData = useMemo(() => {
     const planMap: Record<string, number> = {};
     members.forEach((m) => {
@@ -102,7 +100,6 @@ const Dashboard = () => {
     return Object.entries(planMap).map(([name, value]) => ({ name, value }));
   }, [members]);
 
-  // Payment collection trend
   const paymentTrend = useMemo(() => {
     const months: { month: string; collected: number; pending: number }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -117,14 +114,24 @@ const Dashboard = () => {
     return months;
   }, [members]);
 
-  const stats = [
-    { title: "Active Members", value: active, icon: UserCheck, color: "text-success" },
-    { title: "New This Month", value: newThisMonth, icon: UserPlus, color: "text-primary" },
-    { title: "Expiring Soon", value: expiringSoon, icon: Clock, color: "text-warning" },
-    { title: "Monthly Revenue", value: `₹${monthlyRevenue.toLocaleString()}`, icon: IndianRupee, color: "text-primary" },
-    { title: "Pending Payments", value: pendingPayments, icon: CreditCard, color: "text-warning" },
-    { title: "Monthly Expenses", value: `₹${monthlyExpenses.toLocaleString()}`, icon: TrendingUp, color: "text-destructive" },
-    { title: "Net Profit", value: `₹${netProfit.toLocaleString()}`, icon: IndianRupee, color: netProfit >= 0 ? "text-success" : "text-destructive" },
+  // Recent activity from members
+  const recentActivity = useMemo(() => {
+    return [...members]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5)
+      .map((m) => ({
+        name: m.name,
+        action: m.payment_status === "paid" ? "Membership paid" : "Member added",
+        time: format(parseISO(m.created_at), "dd MMM, HH:mm"),
+        icon: m.payment_status === "paid" ? IndianRupee : UserPlus,
+      }));
+  }, [members]);
+
+  const topStats = [
+    { title: "Total Members", value: total, icon: Users, trend: `${active} active` },
+    { title: "Active Members", value: active, icon: UserCheck, trend: `${expired} expired` },
+    { title: "Monthly Revenue", value: `₹${monthlyRevenue.toLocaleString()}`, icon: IndianRupee, trend: `₹${netProfit.toLocaleString()} profit` },
+    { title: "Today's Attendance", value: newThisMonth, icon: CalendarCheck, trend: `${expiringSoon} expiring soon` },
   ];
 
   const quickActions = [
@@ -134,24 +141,33 @@ const Dashboard = () => {
     { label: "View Members", icon: Users, path: "/members" },
   ];
 
+  const tooltipStyle = {
+    backgroundColor: "hsl(var(--card))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "8px",
+    color: "hsl(var(--foreground))",
+    fontSize: "12px",
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your gym</p>
+          <p className="text-sm text-muted-foreground">Welcome back — here's your gym overview</p>
         </div>
         {isTrialing ? (
-          <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 px-4 py-1.5 text-sm font-semibold">
-            Trial – {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Remaining
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 px-4 py-1.5 text-sm font-semibold">
+            Trial · {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Left
           </Badge>
-        ) : profile?.subscription_status === "active" ? (
-          <Badge variant="outline" className="bg-success/15 text-success border-success/30 px-4 py-1.5 text-sm font-semibold">
-            Plan: {profile.subscription_plan?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) || "Active"}
+        ) : isActive ? (
+          <Badge variant="outline" className="bg-success/10 text-success border-success/25 px-4 py-1.5 text-sm font-semibold">
+            {profile?.subscription_plan?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) || "Active"}
           </Badge>
-        ) : profile?.subscription_status === "expired" ? (
-          <Badge variant="outline" className="bg-destructive/15 text-destructive border-destructive/30 px-4 py-1.5 text-sm font-semibold cursor-pointer" onClick={() => navigate("/subscription")}>
-            Plan Expired – Upgrade Now
+        ) : trialExpired ? (
+          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/25 px-4 py-1.5 text-sm font-semibold cursor-pointer" onClick={() => navigate("/subscription")}>
+            Expired — Upgrade
           </Badge>
         ) : null}
       </div>
@@ -172,31 +188,32 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Trainer Stats - Owner with Pro plan */}
+      {/* Trainer Stats */}
       {isOwner && profile?.subscription_plan?.includes("pro") && (
         <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => navigate("/trainers")}>
           <CardContent className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <UserCog className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium">{activeTrainers.length} Active Trainer(s) · {allTrainers.length} Total</p>
-              </div>
+              <p className="text-sm font-medium">{activeTrainers.length} Active Trainer(s) · {allTrainers.length} Total</p>
             </div>
             <Button variant="outline" size="sm">Manage Trainers</Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="border-border bg-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">{stat.title}</CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-display text-card-foreground">{stat.value}</div>
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {topStats.map((stat) => (
+          <Card key={stat.title} className="stat-card border-border bg-card overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.title}</span>
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <stat.icon className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold font-display text-foreground">{stat.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
             </CardContent>
           </Card>
         ))}
@@ -205,103 +222,147 @@ const Dashboard = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {quickActions.map((action) => (
-          <Button key={action.label} variant="outline" className="h-auto py-3 flex-col gap-2" onClick={() => navigate(action.path)}>
+          <Button
+            key={action.label}
+            variant="outline"
+            className="h-auto py-3 flex-col gap-2 border-border hover:border-primary/30 hover:bg-primary/5 transition-all"
+            onClick={() => navigate(action.path)}
+          >
             <action.icon className="h-5 w-5 text-primary" />
             <span className="text-xs">{action.label}</span>
           </Button>
         ))}
       </div>
 
-      {/* Charts — only full analytics for owners */}
+      {/* Charts & Activity — only for owners */}
       {isOwner && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Revenue vs Expenses */}
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />Revenue vs Expenses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={revenueExpenseData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
-                  <Legend />
-                  <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        <>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Revenue vs Expenses - span 2 */}
+            <Card className="lg:col-span-2 border-border bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-display flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />Revenue vs Expenses
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={revenueExpenseData} barGap={4}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="revenue" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="expenses" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} opacity={0.7} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-          {/* Member Growth */}
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />Member Growth
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={growthData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
-                  <Line type="monotone" dataKey="members" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: "hsl(var(--primary))", r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            {/* Recent Activity Panel */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-display flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {recentActivity.length === 0 ? (
+                  <p className="text-muted-foreground text-sm text-center py-8">No recent activity</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recentActivity.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <item.icon className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{item.action}</p>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground shrink-0">{item.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Payment Collection Trend */}
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />Payment Collection
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={paymentTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-                  <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
-                  <Legend />
-                  <Bar dataKey="collected" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pending" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Member Growth */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-display flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />Member Growth
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={growthData}>
+                    <defs>
+                      <linearGradient id="memberGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Area type="monotone" dataKey="members" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="url(#memberGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-          {/* Plan Distribution Pie */}
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="text-base font-display flex items-center gap-2">
+            {/* Payment Collection */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-display flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />Payment Collection
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={paymentTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="collected" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="pending" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} opacity={0.7} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Plan Distribution */}
+          <Card className="border-border bg-card max-w-md">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-display flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" />Plan Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
               {planData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
-                    <Pie data={planData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    <Pie data={planData} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                       {planData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-muted-foreground text-center py-12">No member data yet</p>
+                <p className="text-muted-foreground text-center py-12 text-sm">No member data yet</p>
               )}
             </CardContent>
           </Card>
-        </div>
+        </>
       )}
 
       {membersQuery.isLoading && <p className="text-muted-foreground">Loading...</p>}
