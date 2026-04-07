@@ -53,28 +53,32 @@ export function AppSidebar() {
   const isMaster = user?.email === MASTER_EMAIL;
   const ownerNav = ownerNavBase.filter((item) => !("proOnly" in item) || isPro);
   const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
-  // Add admin link for master admin
   const finalNav = isMaster
     ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
     : navItems;
 
   const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
-  const roleColor = isOwner ? "bg-sidebar-primary/15 text-sidebar-primary border-sidebar-primary/30" : "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-sidebar-primary shrink-0">
-            <Dumbbell className="h-5 w-5 text-sidebar-primary-foreground" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary shrink-0">
+            <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          {!collapsed && <span className="text-lg font-bold font-display text-sidebar-accent-foreground">GymFlow</span>}
+          {!collapsed && (
+            <span className="text-lg font-bold font-display text-sidebar-accent-foreground tracking-tight">
+              GymFlow
+            </span>
+          )}
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 px-4">
+            Menu
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {finalNav.map((item) => (
@@ -83,8 +87,8 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/dashboard"}
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+                      className="hover:bg-sidebar-accent transition-colors duration-200"
+                      activeClassName="bg-primary/10 text-primary font-medium border-r-2 border-primary"
                     >
                       <item.icon className="mr-2 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
@@ -97,18 +101,23 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 space-y-2">
+      <SidebarFooter className="p-3 space-y-2 border-t border-sidebar-border">
         {!collapsed && (
-          <div className="px-2 space-y-1">
+          <div className="px-2 space-y-1.5">
             <p className="text-xs text-sidebar-foreground truncate">{user?.email}</p>
-            <Badge variant="outline" className={`text-[10px] ${roleColor}`}>{roleBadge}</Badge>
+            <Badge
+              variant="outline"
+              className="text-[10px] bg-primary/10 text-primary border-primary/25"
+            >
+              {roleBadge}
+            </Badge>
           </div>
         )}
         <Button
           variant="ghost"
           size={collapsed ? "icon" : "default"}
           onClick={signOut}
-          className="w-full text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+          className="w-full text-sidebar-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="ml-2">Sign Out</span>}
