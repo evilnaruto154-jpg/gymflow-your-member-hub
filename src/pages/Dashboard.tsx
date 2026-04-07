@@ -141,11 +141,19 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold font-display text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">Overview of your gym</p>
         </div>
-        {isTrialing && (
+        {isTrialing ? (
           <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 px-4 py-1.5 text-sm font-semibold">
-            Trial Plan – {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Remaining
+            Trial – {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Remaining
           </Badge>
-        )}
+        ) : profile?.subscription_status === "active" ? (
+          <Badge variant="outline" className="bg-success/15 text-success border-success/30 px-4 py-1.5 text-sm font-semibold">
+            Plan: {profile.subscription_plan?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) || "Active"}
+          </Badge>
+        ) : profile?.subscription_status === "expired" ? (
+          <Badge variant="outline" className="bg-destructive/15 text-destructive border-destructive/30 px-4 py-1.5 text-sm font-semibold cursor-pointer" onClick={() => navigate("/subscription")}>
+            Plan Expired – Upgrade Now
+          </Badge>
+        ) : null}
       </div>
 
       {/* Smart Alerts */}
