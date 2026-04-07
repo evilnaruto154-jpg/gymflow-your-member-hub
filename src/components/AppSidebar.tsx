@@ -59,7 +59,7 @@ export function AppSidebar() {
     : navItems;
 
   const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
-  const roleColor = isOwner ? "bg-primary/15 text-primary border-primary/30" : "bg-secondary text-secondary-foreground border-border";
+  const roleColor = isOwner ? "bg-sidebar-primary/15 text-sidebar-primary border-sidebar-primary/30" : "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
