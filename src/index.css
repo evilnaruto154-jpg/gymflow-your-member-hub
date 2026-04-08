@@ -6,52 +6,52 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 20% 10%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 222 47% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 222 47% 16%;
 
-    --primary: 187 100% 45%;
-    --primary-foreground: 220 25% 8%;
+    --primary: 224 76% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 20% 10%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 16%;
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 220 80% 56%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 89%;
-    --input: 220 14% 89%;
-    --ring: 187 100% 45%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 76% 53%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 10% 40%;
-    --sidebar-primary: 187 100% 40%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 224 76% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 95%;
-    --sidebar-accent-foreground: 220 20% 10%;
-    --sidebar-border: 220 14% 89%;
-    --sidebar-ring: 187 100% 40%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 16%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 224 76% 53%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
     --success: 152 76% 40%;
     --success-foreground: 0 0% 100%;
 
-    --chart-1: 187 100% 45%;
-    --chart-2: 220 80% 56%;
+    --chart-1: 224 76% 53%;
+    --chart-2: 217 91% 60%;
     --chart-3: 152 76% 40%;
     --chart-4: 38 92% 50%;
     --chart-5: 280 65% 60%;
