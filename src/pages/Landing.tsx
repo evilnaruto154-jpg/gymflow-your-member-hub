@@ -197,7 +197,7 @@ const Landing = () => {
 
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative z-10">
           {/* Left */}
-          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
+          <RevealSection className="space-y-6 sm:space-y-8 text-center lg:text-left" direction="left">
             <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm font-medium inline-flex">
               <Zap className="h-3.5 w-3.5 mr-1.5" /> 7-day free trial • No credit card required
             </Badge>
@@ -235,10 +235,10 @@ const Landing = () => {
               <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No credit card</div>
               <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Cancel anytime</div>
             </div>
-          </div>
+          </RevealSection>
 
           {/* Right — Dashboard mockup */}
-          <div className="relative max-w-lg mx-auto lg:max-w-none w-full">
+          <RevealSection className="relative max-w-lg mx-auto lg:max-w-none w-full" direction="right" delay={200}>
             <div className="rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
               {/* Title bar */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
@@ -304,7 +304,7 @@ const Landing = () => {
                 <p className="text-xs font-semibold">Revenue Up</p>
                 <p className="text-[11px] text-primary font-bold">+23% this month</p>
               </div>
-            </div>
+          </RevealSection>
           </div>
         </div>
       </section>
