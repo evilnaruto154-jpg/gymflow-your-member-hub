@@ -303,9 +303,9 @@ const Landing = () => {
               <div>
                 <p className="text-xs font-semibold">Revenue Up</p>
                 <p className="text-[11px] text-primary font-bold">+23% this month</p>
-              </div>
+            </div>
           </RevealSection>
-          </div>
+        </div>
         </div>
       </section>
 
