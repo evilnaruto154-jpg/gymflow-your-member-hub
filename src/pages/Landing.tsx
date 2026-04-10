@@ -55,7 +55,7 @@ const Landing = () => {
     { icon: CalendarCheck, title: "Attendance Tracking", desc: "Monitor daily attendance with check-in tracking and detailed analytics." },
     { icon: CreditCard, title: "Payment Tracking", desc: "Track every payment, due, and invoice with automated reminders." },
     { icon: Package, title: "Inventory Management", desc: "Manage gym equipment, supplements, and supplies with smart stock alerts." },
-    { icon: UserCog, title: "Trainer Management", desc: "Assign trainers, manage schedules, and track their performance." },
+    { icon: BarChart3, title: "Staff Management", desc: "Add staff accounts with role-based access and manage permissions." },
     { icon: BarChart3, title: "Analytics Dashboard", desc: "Get real-time insights into revenue, growth, and member retention." },
   ];
 
@@ -71,7 +71,7 @@ const Landing = () => {
     { q: "Can I cancel anytime?", a: "Absolutely. There are no long-term contracts. You can cancel, upgrade, or downgrade your plan at any time." },
     { q: "Is my data secure?", a: "Yes. We use enterprise-grade encryption and security practices. Your data is backed up daily and stored securely in the cloud." },
     { q: "Do I need to install anything?", a: "No. GymFlow is a web-based platform that works in your browser. You can also install it as a PWA on mobile devices." },
-    { q: "Can multiple staff members use the same account?", a: "Yes. You can add trainers and staff with role-based access so everyone has the right permissions." },
+    { q: "Can multiple staff members use the same account?", a: "Yes. You can add staff with role-based access so everyone has the right permissions." },
   ];
 
   const plans = {
@@ -376,7 +376,7 @@ const Landing = () => {
                     { icon: Users, label: "Members" },
                     { icon: CreditCard, label: "Payments" },
                     { icon: CalendarCheck, label: "Attendance" },
-                    { icon: UserCog, label: "Trainers" },
+                    { icon: UserCog, label: "Staff" },
                   ].map((item) => (
                     <div
                       key={item.label}
