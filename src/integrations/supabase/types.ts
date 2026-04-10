@@ -288,45 +288,6 @@ export type Database = {
         }
         Relationships: []
       }
-      trainers: {
-        Row: {
-          auth_user_id: string | null
-          created_at: string
-          id: string
-          owner_id: string
-          phone: string
-          specialization: string | null
-          status: string
-          trainer_email: string
-          trainer_name: string
-          updated_at: string
-        }
-        Insert: {
-          auth_user_id?: string | null
-          created_at?: string
-          id?: string
-          owner_id: string
-          phone?: string
-          specialization?: string | null
-          status?: string
-          trainer_email: string
-          trainer_name: string
-          updated_at?: string
-        }
-        Update: {
-          auth_user_id?: string | null
-          created_at?: string
-          id?: string
-          owner_id?: string
-          phone?: string
-          specialization?: string | null
-          status?: string
-          trainer_email?: string
-          trainer_name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -391,7 +352,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "trainer" | "staff"
+      app_role: "owner" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -519,7 +480,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "trainer", "staff"],
+      app_role: ["owner", "staff"],
     },
   },
 } as const

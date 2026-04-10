@@ -18,8 +18,8 @@ const roles: { id: SelectedRole; title: string; desc: string; img: string; icon:
   },
   {
     id: "staff",
-    title: "Trainer / Staff",
-    desc: "Trainer / Reception • limited access",
+    title: "Staff",
+    desc: "Reception / Staff • limited access",
     img: gymStaffImg,
     icon: Users,
   },

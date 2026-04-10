@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useMembers, getMemberStatus } from "@/hooks/useMembers";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useInventory } from "@/hooks/useInventory";
-import { useTrainers } from "@/hooks/useTrainers";
 import { useProfile } from "@/hooks/useProfile";
 import { useRole } from "@/hooks/useRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, UserCheck, UserPlus, AlertTriangle, TrendingUp, IndianRupee,
-  Clock, CreditCard, Package, ArrowRight, UserCog, Activity, CalendarCheck
+  Clock, CreditCard, Package, ArrowRight, Activity, CalendarCheck
 } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
@@ -26,7 +25,6 @@ const Dashboard = () => {
   const { membersQuery } = useMembers();
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
-  const { activeTrainers, trainers: allTrainers } = useTrainers();
   const { isTrialing, trialDaysLeft, profile, isActive, trialExpired } = useProfile();
   const { isOwner } = useRole();
   const navigate = useNavigate();
@@ -188,18 +186,6 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Trainer Stats */}
-      {isOwner && profile?.subscription_plan?.includes("pro") && (
-        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => navigate("/trainers")}>
-          <CardContent className="py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <UserCog className="h-5 w-5 text-primary" />
-              <p className="text-sm font-medium">{activeTrainers.length} Active Trainer(s) · {allTrainers.length} Total</p>
-            </div>
-            <Button variant="outline" size="sm">Manage Trainers</Button>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Top Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

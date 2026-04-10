@@ -1,10 +1,10 @@
 import { useProfile } from "@/hooks/useProfile";
 
-export type Feature = "members" | "whatsapp" | "attendance" | "expenses" | "reports" | "staff" | "trainers";
+export type Feature = "members" | "whatsapp" | "attendance" | "expenses" | "reports" | "staff";
 
 const TRIAL_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses"];
 const STARTER_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff"];
-const PRO_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff", "trainers"];
+const PRO_FEATURES: Feature[] = ["members", "whatsapp", "attendance", "expenses", "reports", "staff"];
 
 export function useFeatureAccess() {
   const { isActive, isTrialing, trialExpired, hasAccess, profile } = useProfile();
