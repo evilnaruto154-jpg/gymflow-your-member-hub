@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, UserPlus, Settings, LogOut, CreditCard,
-  Dumbbell, CalendarCheck, IndianRupee, Package, UserCog, Shield
+  Dumbbell, CalendarCheck, IndianRupee, Package, Shield
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { NavLink } from "@/components/NavLink";
@@ -16,22 +16,14 @@ import { Button } from "@/components/ui/button";
 
 const MASTER_EMAIL = "mullahusen999@gmail.com";
 
-const ownerNavBase = [
+const ownerNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Members", url: "/members", icon: Users },
   { title: "Add Member", url: "/members/new", icon: UserPlus },
   { title: "Attendance", url: "/attendance", icon: CalendarCheck },
   { title: "Expenses", url: "/expenses", icon: IndianRupee },
   { title: "Inventory", url: "/inventory", icon: Package },
-  { title: "Trainers", url: "/trainers", icon: UserCog, proOnly: true },
   { title: "Subscription", url: "/subscription", icon: CreditCard },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
-const trainerNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Members", url: "/members", icon: Users },
-  { title: "Attendance", url: "/attendance", icon: CalendarCheck },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
@@ -46,18 +38,16 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut, user } = useAuth();
-  const { primaryRole, isOwner } = useRole();
+  const { isOwner } = useRole();
   const { profile } = useProfile();
 
-  const isPro = profile?.subscription_plan?.includes("pro") || false;
   const isMaster = user?.email === MASTER_EMAIL;
-  const ownerNav = ownerNavBase.filter((item) => !("proOnly" in item) || isPro);
-  const navItems = isOwner ? ownerNav : primaryRole === "trainer" ? trainerNav : staffNav;
+  const navItems = isOwner ? ownerNav : staffNav;
   const finalNav = isMaster
     ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
     : navItems;
 
-  const roleBadge = isOwner ? "Owner" : primaryRole === "trainer" ? "Trainer" : "Staff";
+  const roleBadge = isOwner ? "Owner" : "Staff";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">

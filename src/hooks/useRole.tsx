@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type AppRole = "owner" | "trainer" | "staff";
+export type AppRole = "owner" | "staff";
 
 export function useRole() {
   const { user } = useAuth();
@@ -22,9 +22,8 @@ export function useRole() {
 
   const roles = roleQuery.data ?? [];
   const isOwner = roles.includes("owner");
-  const isTrainer = roles.includes("trainer");
   const isStaff = roles.includes("staff");
-  const primaryRole: AppRole = isOwner ? "owner" : isTrainer ? "trainer" : "staff";
+  const primaryRole: AppRole = isOwner ? "owner" : "staff";
 
-  return { roles, isOwner, isTrainer, isStaff, primaryRole, roleQuery };
+  return { roles, isOwner, isStaff, primaryRole, roleQuery };
 }
