@@ -186,18 +186,6 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Trainer Stats */}
-      {isOwner && profile?.subscription_plan?.includes("pro") && (
-        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => navigate("/trainers")}>
-          <CardContent className="py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <UserCog className="h-5 w-5 text-primary" />
-              <p className="text-sm font-medium">{activeTrainers.length} Active Trainer(s) · {allTrainers.length} Total</p>
-            </div>
-            <Button variant="outline" size="sm">Manage Trainers</Button>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Top Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
