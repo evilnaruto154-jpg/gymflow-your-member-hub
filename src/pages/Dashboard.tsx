@@ -25,7 +25,6 @@ const Dashboard = () => {
   const { membersQuery } = useMembers();
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
-  const { activeTrainers, trainers: allTrainers } = useTrainers();
   const { isTrialing, trialDaysLeft, profile, isActive, trialExpired } = useProfile();
   const { isOwner } = useRole();
   const navigate = useNavigate();
