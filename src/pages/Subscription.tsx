@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { PRICING_PLANS, YEARLY_DISCOUNT_LABEL } from "@/lib/pricing";
 
 const Subscription = () => {
   const { profile, isActive, isTrialing, trialDaysLeft, trialExpired, updateProfile } = useProfile();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
@@ -24,6 +26,26 @@ const Subscription = () => {
   };
 
   const handleStartTrial = async () => {
+    // Edge case 1: User not logged in (though protected route handles this, it's safe to check)
+    if (!user) {
+      toast({ title: "Authentication Required", description: "You must be logged in to activate a trial.", variant: "destructive" });
+      navigate("/auth", { replace: true });
+      return;
+    }
+
+    // Edge case 2: Duplicate trial or expired trial
+    if (profile?.trial_used || trialExpired) {
+      toast({ title: "Trial Unavailable", description: "You have already used your free trial.", variant: "destructive" });
+      return;
+    }
+
+    // Edge case 3: Trial already active
+    if (isTrialing) {
+      toast({ title: "Trial Active", description: "Your free trial is already in progress." });
+      navigate("/dashboard");
+      return;
+    }
+
     setStartingTrial(true);
     try {
       const now = new Date();
@@ -32,9 +54,10 @@ const Subscription = () => {
 
       await updateProfile.mutateAsync({
         subscription_status: "trialing",
+        subscription_plan: "free_trial",
         trial_start_date: now.toISOString(),
         trial_end_date: trialEnd.toISOString(),
-        trial_used: false,
+        trial_used: true,
       });
 
       toast({

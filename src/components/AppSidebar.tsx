@@ -5,7 +5,7 @@ import {
 import { useProfile } from "@/hooks/useProfile";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
-import { useRole } from "@/hooks/useRole";
+// Removed useRole import
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -27,27 +27,19 @@ const ownerNav = [
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
-const staffNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Members", url: "/members", icon: Users },
-  { title: "Add Member", url: "/members/new", icon: UserPlus },
-  { title: "Attendance", url: "/attendance", icon: CalendarCheck },
-];
-
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { signOut, user } = useAuth();
-  const { isOwner } = useRole();
   const { profile } = useProfile();
 
   const isMaster = user?.email === MASTER_EMAIL;
-  const navItems = isOwner ? ownerNav : staffNav;
+  const navItems = ownerNav;
   const finalNav = isMaster
     ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
     : navItems;
 
-  const roleBadge = isOwner ? "Owner" : "Staff";
+  const roleBadge = "Owner";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">

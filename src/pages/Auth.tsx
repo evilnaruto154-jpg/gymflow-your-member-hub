@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,7 @@ type AuthMode = "login" | "signup" | "forgot";
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const [searchParams] = useSearchParams();
-  const selectedRole = searchParams.get("role") as "owner" | "staff" | null;
-  const [mode, setMode] = useState<AuthMode>(selectedRole ? "signup" : "login");
+  const [mode, setMode] = useState<AuthMode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +53,7 @@ const Auth = () => {
     }
 
     if (mode === "signup") {
-      const { error } = await signUp(email, password, name, selectedRole || "owner");
+      const { error } = await signUp(email, password, name);
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
@@ -74,17 +72,33 @@ const Auth = () => {
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+      if (error) {
+        toast({ title: "Google sign-in failed", description: error.message, variant: "destructive" });
+        setGoogleLoading(false);
+      }
+      // If no error, Supabase will redirect the browser externally — do not setGoogleLoading(false) here
+    } catch (err) {
+      toast({
+        title: "Google sign-in failed",
+        description: err instanceof Error ? err.message : "Please try again.",
+        variant: "destructive",
+      });
       setGoogleLoading(false);
     }
   };
 
-  const roleLabel = selectedRole === "staff" ? "Staff" : "Owner";
-  const title = mode === "forgot" ? "Reset Password" : mode === "login" ? "Welcome back" : `Create ${roleLabel} Account`;
+  const title = mode === "forgot" ? "Reset Password" : mode === "login" ? "Welcome back" : "Create Account";
   const desc = mode === "forgot" ? "Enter your email to receive a reset link" : mode === "login" ? "Sign in to manage your gym" : "Start your 7-day free trial";
 
   return (
@@ -109,10 +123,12 @@ const Auth = () => {
             {mode !== "forgot" && (
               <>
                 <Button
+                  id="google-signin-btn"
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleLogin}
                   disabled={googleLoading}
+                  type="button"
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -120,7 +136,7 @@ const Auth = () => {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
-                  {googleLoading ? "Connecting..." : "Continue with Google"}
+                  {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
                 </Button>
 
                 <div className="relative">
@@ -151,22 +167,22 @@ const Auth = () => {
               )}
               {mode === "login" && (
                 <div className="text-right">
-                  <button type="button" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
+                  <button type="button" id="forgot-password-btn" onClick={() => setMode("forgot")} className="text-xs text-primary hover:underline">
                     Forgot password?
                   </button>
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button id="auth-submit-btn" type="submit" className="w-full" disabled={submitting}>
                 {submitting ? "Please wait..." : mode === "forgot" ? "Send Reset Link" : mode === "login" ? "Sign In" : "Create Account"}
               </Button>
             </form>
             <div className="mt-4 text-center text-sm text-muted-foreground">
               {mode === "forgot" ? (
-                <button onClick={() => setMode("login")} className="text-primary hover:underline font-medium">Back to login</button>
+                <button id="back-to-login-btn" onClick={() => setMode("login")} className="text-primary hover:underline font-medium">Back to login</button>
               ) : mode === "login" ? (
-                <>Don't have an account?{" "}<button onClick={() => setMode("signup")} className="text-primary hover:underline font-medium">Sign up</button></>
+                <>Don't have an account?{" "}<button id="switch-to-signup-btn" onClick={() => setMode("signup")} className="text-primary hover:underline font-medium">Sign up</button></>
               ) : (
-                <>Already have an account?{" "}<button onClick={() => setMode("login")} className="text-primary hover:underline font-medium">Sign in</button></>
+                <>Already have an account?{" "}<button id="switch-to-login-btn" onClick={() => setMode("login")} className="text-primary hover:underline font-medium">Sign in</button></>
               )}
             </div>
           </CardContent>

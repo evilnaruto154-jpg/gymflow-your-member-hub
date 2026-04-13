@@ -3,7 +3,7 @@ import { useMembers, getMemberStatus } from "@/hooks/useMembers";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useInventory } from "@/hooks/useInventory";
 import { useProfile } from "@/hooks/useProfile";
-import { useRole } from "@/hooks/useRole";
+import { useAttendance } from "@/hooks/useAttendance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,10 +26,11 @@ const Dashboard = () => {
   const { expensesQuery } = useExpenses();
   const { lowStockItems } = useInventory();
   const { isTrialing, trialDaysLeft, profile, isActive, trialExpired } = useProfile();
-  const { isOwner } = useRole();
+  const { attendanceQuery } = useAttendance();
   const navigate = useNavigate();
   const members = membersQuery.data ?? [];
   const expenses = expensesQuery.data ?? [];
+  const attendance = attendanceQuery.data ?? [];
 
   const total = members.length;
   const active = members.filter((m) => getMemberStatus(m.expiry_date) === "active").length;
@@ -125,11 +126,13 @@ const Dashboard = () => {
       }));
   }, [members]);
 
+  const todaysAttendance = attendance.filter((a) => a.check_in_date === format(new Date(), "yyyy-MM-dd")).length;
+
   const topStats = [
-    { title: "Total Members", value: total, icon: Users, trend: `${active} active` },
-    { title: "Active Members", value: active, icon: UserCheck, trend: `${expired} expired` },
+    { title: "Total Members", value: total, icon: Users, trend: `${newThisMonth} new this month` },
+    { title: "Active Members", value: active, icon: UserCheck, trend: `${expiringSoon} expiring soon` },
     { title: "Monthly Revenue", value: `₹${monthlyRevenue.toLocaleString()}`, icon: IndianRupee, trend: `₹${netProfit.toLocaleString()} profit` },
-    { title: "Today's Attendance", value: newThisMonth, icon: CalendarCheck, trend: `${expiringSoon} expiring soon` },
+    { title: "Today's Attendance", value: todaysAttendance, icon: CalendarCheck, trend: "Check-ins today" },
   ];
 
   const quickActions = [
@@ -220,9 +223,6 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Charts & Activity — only for owners */}
-      {isOwner && (
-        <>
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Revenue vs Expenses - span 2 */}
             <Card className="lg:col-span-2 border-border bg-card">
@@ -348,8 +348,6 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-        </>
-      )}
 
       {membersQuery.isLoading && <p className="text-muted-foreground">Loading...</p>}
     </div>

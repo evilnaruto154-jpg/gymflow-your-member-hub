@@ -9,7 +9,7 @@ interface FeatureGateProps {
 }
 
 export function FeatureGate({ feature, children }: FeatureGateProps) {
-  const { isLocked } = useFeatureAccess();
+  const { isLocked, isTrialing, trialExpired } = useFeatureAccess();
   const navigate = useNavigate();
 
   if (isLocked(feature)) {
@@ -20,7 +20,9 @@ export function FeatureGate({ feature, children }: FeatureGateProps) {
         </div>
         <h2 className="text-xl font-bold font-display text-foreground">Feature Locked</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Your 7-day trial has expired. Please upgrade to continue using this feature.
+          {trialExpired 
+            ? "Your 7-day trial has expired. Please upgrade to continue." 
+            : "This feature requires a plan upgrade to access."}
         </p>
         <Button onClick={() => navigate("/subscription")}>Upgrade Now</Button>
       </div>

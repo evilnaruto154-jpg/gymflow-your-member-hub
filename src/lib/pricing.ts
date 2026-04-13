@@ -35,7 +35,6 @@ export const PRICING_PLANS: PricingPlan[] = [
       "Attendance tracking",
       "Expense management",
       "Reports & analytics",
-      "Staff accounts",
       "Priority support",
     ],
   },

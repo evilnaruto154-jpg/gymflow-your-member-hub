@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCheck, CalendarCheck } from "lucide-react";
+import { UserCheck, CalendarCheck, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 const AttendancePage = () => {
@@ -23,13 +23,24 @@ const AttendancePage = () => {
 
   const handleCheckIn = () => {
     if (selectedMember) {
-      checkIn.mutate(selectedMember);
-      setSelectedMember("");
+      checkIn.mutate(selectedMember, {
+        onSuccess: () => {
+          setSelectedMember("");
+        }
+      });
     }
   };
 
   const getMemberName = (memberId: string) =>
     members.find((m) => m.id === memberId)?.name ?? "Unknown";
+
+  if (attendanceQuery.isLoading || membersQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <FeatureGate feature="attendance">
@@ -66,14 +77,15 @@ const AttendancePage = () => {
                 </SelectContent>
               </Select>
               <Button onClick={handleCheckIn} disabled={!selectedMember || checkIn.isPending}>
-                <UserCheck className="h-4 w-4 mr-1" /> Check In
+                {checkIn.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <UserCheck className="h-4 w-4 mr-1" />}
+                {checkIn.isPending ? "Checking..." : "Check In"}
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
-          <Table>
+        <div className="rounded-lg border border-border overflow-x-auto">
+          <Table className="min-w-[500px]">
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead>Member</TableHead>

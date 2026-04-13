@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMembers, getMemberStatus, Member } from "@/hooks/useMembers";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,9 @@ const Members = () => {
   const [filter, setFilter] = useState<string>("all");
   const navigate = useNavigate();
   const members = membersQuery.data ?? [];
+  const { canAccess, getMemberLimit } = useFeatureAccess();
+  const limit = getMemberLimit();
+  const canAdd = members.length < limit;
 
   const filtered = members.filter((m) => {
     const matchSearch =
@@ -62,7 +66,9 @@ const Members = () => {
           <h1 className="text-2xl font-bold font-display text-foreground">Members</h1>
           <p className="text-muted-foreground">{members.length} total members</p>
         </div>
-        <Button onClick={() => navigate("/members/new")}>Add Member</Button>
+        <Button onClick={() => navigate("/members/new")} disabled={!canAdd}>
+          {canAdd ? "Add Member" : "Capacity Reached"}
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -131,7 +137,7 @@ const Members = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => sendWhatsApp(member)} title="WhatsApp Reminder">
+                      <Button size="icon" variant="ghost" onClick={() => sendWhatsApp(member)} title="WhatsApp Reminder" disabled={!canAccess("whatsapp")}>
                         <MessageCircle className="h-4 w-4" />
                       </Button>
                       <Button size="icon" variant="ghost" onClick={() => navigate(`/members/${member.id}/edit`)}>

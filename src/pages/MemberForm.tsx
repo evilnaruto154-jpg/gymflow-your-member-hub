@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMembers } from "@/hooks/useMembers";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,10 @@ const MemberForm = () => {
   const isEdit = !!id;
   const navigate = useNavigate();
   const { membersQuery, addMember, updateMember } = useMembers();
+  const { isPro, getMemberLimit } = useFeatureAccess();
+  const limit = getMemberLimit();
+  const membersCount = membersQuery.data?.length || 0;
+  const canAdd = isEdit || membersCount < limit;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -88,6 +93,16 @@ const MemberForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!canAdd && (
+              <div className="bg-destructive/10 text-destructive border border-destructive/20 p-4 rounded-lg flex flex-col gap-2">
+                <p className="font-semibold text-sm">Member Limit Reached</p>
+                <p className="text-xs">Your current plan limits you to {limit} members. Please upgrade to add more members.</p>
+                <Button type="button" variant="outline" className="w-fit mt-2 border-destructive text-destructive hover:bg-destructive hover:text-white" onClick={() => navigate("/subscription")}>
+                  Upgrade Plan
+                </Button>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} />
@@ -163,7 +178,7 @@ const MemberForm = () => {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={addMember.isPending || updateMember.isPending}>
+              <Button type="submit" disabled={!canAdd || addMember.isPending || updateMember.isPending}>
                 {isEdit ? "Update Member" : "Add Member"}
               </Button>
               <Button type="button" variant="secondary" onClick={() => navigate("/members")}>

@@ -7,8 +7,8 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { AppLayout } from "@/components/AppLayout";
-import RoleSelection from "./pages/RoleSelection";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -57,19 +57,22 @@ function SubscriptionGate({ children }: { children: React.ReactNode }) {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="gymflow-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Landing />} />
-              <Route path="/role-selection" element={<RoleSelection />} />
-              <Route path="/get-started" element={<RoleSelection />} />
               <Route path="/auth" element={<Auth />} />
+              {/* OAuth callback — MUST exist to avoid 404 after Google sign-in */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/install" element={<Install />} />
+
+              {/* Protected routes */}
               <Route
                 element={
                   <ProtectedRoute>
@@ -88,7 +91,9 @@ const App = () => (
                 <Route path="/inventory" element={<SubscriptionGate><InventoryPage /></SubscriptionGate>} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
-              <Route path="*" element={<NotFound />} />
+
+              {/* 404 — redirect unknown paths to home instead of error page */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AuthProvider>
         </BrowserRouter>
