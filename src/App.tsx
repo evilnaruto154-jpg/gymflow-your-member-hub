@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { AppLayout } from "@/components/AppLayout";
 import Auth from "./pages/Auth";
@@ -22,6 +23,12 @@ import SettingsPage from "./pages/SettingsPage";
 import AdminPanel from "./pages/AdminPanel";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
+
+// New admin panel
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 const queryClient = new QueryClient();
 
@@ -72,7 +79,27 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/install" element={<Install />} />
 
-              {/* Protected routes */}
+              {/* ========== ADMIN PANEL (separate auth) ========== */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminAuthProvider>
+                    <AdminLogin />
+                  </AdminAuthProvider>
+                }
+              />
+              <Route
+                element={
+                  <AdminAuthProvider>
+                    <AdminLayout />
+                  </AdminAuthProvider>
+                }
+              >
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+              </Route>
+
+              {/* Protected app routes */}
               <Route
                 element={
                   <ProtectedRoute>
@@ -81,7 +108,7 @@ const App = () => (
                 }
               >
                 <Route path="/subscription" element={<Subscription />} />
-                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/old-admin" element={<AdminPanel />} />
                 <Route path="/dashboard" element={<SubscriptionGate><Dashboard /></SubscriptionGate>} />
                 <Route path="/members" element={<SubscriptionGate><Members /></SubscriptionGate>} />
                 <Route path="/members/new" element={<SubscriptionGate><MemberForm /></SubscriptionGate>} />

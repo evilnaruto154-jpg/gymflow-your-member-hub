@@ -35,9 +35,7 @@ export function AppSidebar() {
 
   const isMaster = user?.email === MASTER_EMAIL;
   const navItems = ownerNav;
-  const finalNav = isMaster
-    ? [...navItems, { title: "Admin Panel", url: "/admin", icon: Shield }]
-    : navItems;
+  const finalNav = navItems;
 
   const roleBadge = "Owner";
 
