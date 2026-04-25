@@ -1,24 +1,14 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAdminProfiles } from "@/hooks/useAdminData";
+import { fetchAdminProfiles, AdminProfileRow } from "@/hooks/useAdminData";
 import { format } from "date-fns";
 import {
   Users, UserCheck, UserX, Clock, Search, ArrowUpDown,
   TrendingUp, ChevronDown,
 } from "lucide-react";
 
-// Types for our admin users view
-interface AdminUser {
-  id: string;
-  name: string | null;
-  email: string | null;
-  subscription_plan: string | null;
-  subscription_status: string;
-  subscription_end_date: string | null;
-  trial_end_date: string | null;
-  trial_used: boolean;
-  created_at: string;
-}
+// Use shared type from useAdminData
+type AdminUser = AdminProfileRow;
 
 type SortField = "name" | "email" | "plan" | "expiry" | "created_at";
 type SortDir = "asc" | "desc";
@@ -134,12 +124,9 @@ const AdminDashboard = () => {
   // Fetch all users
   const usersQuery = useQuery({
     queryKey: ["admin-dashboard-users"],
-    queryFn: async () => {
-      const data = await fetchAdminProfiles();
-      return data as AdminUser[];
-    },
+    queryFn: () => fetchAdminProfiles(),
     retry: 1,
-    staleTime: 30000,
+    staleTime: 30_000,
   });
 
   const users = usersQuery.data ?? [];

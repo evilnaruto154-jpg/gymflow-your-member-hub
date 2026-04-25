@@ -18,50 +18,80 @@ export function useAttendance() {
   const { toast } = useToast();
 
   const attendanceQuery = useQuery({
-    queryKey: ["attendance"],
+    queryKey: ["attendance", user?.id],
     queryFn: async () => {
+      if (!user) return [] as Attendance[];
+
       const { data, error } = await supabase
         .from("attendance")
         .select("*")
-        .eq("user_id", user!.id)
-        .order("check_in_date", { ascending: false });
-      if (error) throw error;
-      return data as Attendance[];
+        .eq("user_id", user.id)
+        .order("check_in_date", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("[Attendance] Fetch error:", error.message);
+        throw new Error(error.message);
+      }
+
+      return (data ?? []) as Attendance[];
     },
     enabled: !!user,
+    staleTime: 30_000,
   });
 
   const checkIn = useMutation({
     mutationFn: async (memberId: string) => {
+      if (!user) throw new Error("Not authenticated");
+
       const today = format(new Date(), "yyyy-MM-dd");
-      
+
+      // Check if already checked in today
       const { data: existing, error: checkError } = await supabase
         .from("attendance")
         .select("id")
         .eq("member_id", memberId)
-        .eq("user_id", user!.id)
+        .eq("user_id", user.id)
         .eq("check_in_date", today)
         .maybeSingle();
 
-      if (checkError) throw checkError;
+      if (checkError) {
+        console.error("[Attendance] Check error:", checkError.message);
+        throw new Error(checkError.message);
+      }
 
       if (existing) {
         throw new Error("Member is already checked in for today");
       }
 
-      const { error } = await supabase.from("attendance").insert({
-        member_id: memberId,
-        user_id: user!.id,
-        check_in_date: today,
-      });
-      if (error) throw error;
+      // Insert attendance record
+      const { error: insertError } = await supabase
+        .from("attendance")
+        .insert({
+          member_id: memberId,
+          user_id: user.id,
+          check_in_date: today,
+        });
+
+      if (insertError) {
+        console.error("[Attendance] Insert error:", insertError.message, insertError.details);
+        // Handle unique constraint violation gracefully
+        if (insertError.code === "23505") {
+          throw new Error("Member is already checked in for today");
+        }
+        throw new Error(insertError.message);
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attendance"] });
-      toast({ title: "Check-in recorded" });
+      queryClient.invalidateQueries({ queryKey: ["attendance", user?.id] });
+      toast({ title: "✅ Check-in recorded successfully" });
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Check-in Failed",
+        description: err.message,
+        variant: "destructive",
+      });
     },
   });
 

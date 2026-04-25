@@ -1,12 +1,13 @@
 -- ============================================================
--- GymFlow Admin Panel — Supabase Setup
+-- GymFlow Admin Panel — Complete Supabase Setup
 -- ============================================================
 -- Run this SQL in your Supabase Dashboard → SQL Editor
--- This creates a SECURITY DEFINER function that the admin panel
--- can call to fetch all profiles without needing a user session.
+-- This is the COMPLETE setup — run if you're setting up fresh
+-- OR if users are not showing in the admin panel.
 -- ============================================================
 
--- 1. Create admin panel function (bypasses RLS safely)
+-- 1. admin_panel_list_profiles — bypasses RLS, works WITHOUT login
+--    Used by the standalone admin panel (no Supabase session required)
 CREATE OR REPLACE FUNCTION public.admin_panel_list_profiles()
 RETURNS TABLE (
   id uuid,
@@ -25,7 +26,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT 
+  SELECT
     p.id,
     p.name,
     p.email,
@@ -37,10 +38,36 @@ AS $$
     p.created_at,
     p.gym_name,
     p.login_provider
-  FROM profiles p
+  FROM public.profiles p
   ORDER BY p.created_at DESC;
 $$;
 
--- 2. Grant execute permission to anon role (so it works without login)
+-- Grant to anon (admin panel has no Supabase session)
 GRANT EXECUTE ON FUNCTION public.admin_panel_list_profiles() TO anon;
 GRANT EXECUTE ON FUNCTION public.admin_panel_list_profiles() TO authenticated;
+
+-- 2. admin_update_profile — update user subscription (requires Supabase session as master)
+CREATE OR REPLACE FUNCTION public.admin_update_profile(
+  target_user_id uuid,
+  new_status text,
+  new_plan text DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+  -- Only master admin can call this
+  IF (SELECT email FROM auth.users WHERE id = auth.uid()) != 'mullahusen999@gmail.com' THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
+  UPDATE public.profiles
+  SET
+    subscription_status = new_status,
+    subscription_plan   = COALESCE(new_plan, subscription_plan),
+    trial_used = CASE WHEN new_status IN ('expired', 'blocked') THEN true ELSE trial_used END
+  WHERE id = target_user_id;
+END;
+$$;
