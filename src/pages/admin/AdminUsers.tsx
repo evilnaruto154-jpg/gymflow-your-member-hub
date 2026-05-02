@@ -354,9 +354,12 @@ const AdminUsers = () => {
                 {[
                   { label: "Name", field: "name" as SortField },
                   { label: "Email", field: "email" as SortField },
+                  { label: "Role", field: null },
                   { label: "Plan", field: "plan" as SortField },
                   { label: "Plan Expiry", field: "expiry" as SortField },
                   { label: "Status", field: null },
+                  { label: "Last Login", field: "last_login" as SortField },
+                  { label: "Logins", field: null },
                   { label: "Joined", field: "created_at" as SortField },
                   { label: "Actions", field: null },
                 ].map((col) => (
@@ -386,7 +389,7 @@ const AdminUsers = () => {
             <tbody className="divide-y divide-white/[0.03]">
               {usersQuery.isLoading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={10} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3 text-gray-400">
                       <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/30 border-t-violet-500" />
                       <span className="text-sm">Loading users...</span>
@@ -397,7 +400,7 @@ const AdminUsers = () => {
               {!usersQuery.isLoading && filteredUsers.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={10}
                     className="px-4 py-16 text-center text-gray-500 text-sm"
                   >
                     {search || planFilter !== "all"
@@ -406,7 +409,7 @@ const AdminUsers = () => {
                   </td>
                 </tr>
               )}
-              {filteredUsers.map((user, idx) => (
+              {pagedUsers.map((user, idx) => (
                 <tr
                   key={user.id}
                   className="hover:bg-white/[0.02] transition-colors duration-150 animate-fade-in"
@@ -417,13 +420,24 @@ const AdminUsers = () => {
                       <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/20 flex items-center justify-center text-xs font-medium text-violet-300 shrink-0">
                         {(user.name || user.email || "?").charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm text-white font-medium truncate max-w-[180px]">
-                        {user.name || "—"}
-                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium truncate max-w-[180px]">
+                          {user.name || "—"}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-mono truncate max-w-[180px]">
+                          {user.id.slice(0, 8)}…
+                        </p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="text-sm text-gray-400">{user.email || "—"}</span>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                      <Shield className="h-3 w-3" />
+                      OWNER
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <PlanBadge plan={user._plan} />
@@ -437,6 +451,19 @@ const AdminUsers = () => {
                   </td>
                   <td className="px-4 py-3.5">
                     <StatusBadge status={user._status} />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {user.last_login_at
+                        ? formatDistanceToNow(new Date(user.last_login_at), { addSuffix: true })
+                        : "Never"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-300">
+                      <LogIn className="h-3 w-3 text-gray-500" />
+                      {user.login_count ?? 0}
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="text-sm text-gray-500 whitespace-nowrap">
