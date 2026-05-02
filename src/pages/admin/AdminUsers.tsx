@@ -1,14 +1,17 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAdminProfiles, adminUpdateProfile, AdminProfileRow } from "@/hooks/useAdminData";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Users, Search, ArrowUpDown, ChevronDown, Mail, Calendar,
   CheckCircle, XCircle, AlertTriangle, RefreshCw,
+  ChevronLeft, ChevronRight, Shield, LogIn,
 } from "lucide-react";
 
-type SortField = "name" | "email" | "plan" | "expiry" | "created_at";
+type SortField = "name" | "email" | "plan" | "expiry" | "created_at" | "last_login";
 type SortDir = "asc" | "desc";
+
+const PAGE_SIZE = 10;
 
 function getUserPlan(user: AdminProfileRow): "free" | "trial" | "pro" {
   const now = new Date();
@@ -94,9 +97,12 @@ const AdminUsers = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "Active" | "Expired">("all");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [page, setPage] = useState(1);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   const usersQuery = useQuery({
@@ -150,6 +156,10 @@ const AdminUsers = () => {
       result = result.filter((u) => u._plan === planFilter);
     }
 
+    if (statusFilter !== "all") {
+      result = result.filter((u) => u._status === statusFilter);
+    }
+
     result = [...result].sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -168,12 +178,19 @@ const AdminUsers = () => {
         case "created_at":
           cmp = a.created_at.localeCompare(b.created_at);
           break;
+        case "last_login":
+          cmp = (a.last_login_at || "").localeCompare(b.last_login_at || "");
+          break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
 
     return result;
-  }, [enrichedUsers, search, planFilter, sortField, sortDir]);
+  }, [enrichedUsers, search, planFilter, statusFilter, sortField, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedUsers = filteredUsers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
