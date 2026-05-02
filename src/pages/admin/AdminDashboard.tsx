@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminStats, fetchAdminProfiles } from "@/hooks/useAdminData";
 import {
-  Users, UserCheck, UserX, Clock, ClockAlert, LogIn,
+  Users, UserCheck, UserX, Clock, AlertCircle, LogIn,
   Activity, CalendarDays, TrendingUp, DollarSign, Sparkles,
 } from "lucide-react";
 import {
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
           <Kpi title="Active Subscriptions" value={stats!.active_subs} icon={UserCheck} accent="bg-gradient-to-br from-emerald-500 to-emerald-700" />
           <Kpi title="Expired Subscriptions" value={stats!.expired_subs} icon={UserX} accent="bg-gradient-to-br from-red-500 to-red-700" />
           <Kpi title="Active Trials" value={stats!.active_trials} icon={Clock} accent="bg-gradient-to-br from-amber-500 to-amber-700" />
-          <Kpi title="Expired Trials" value={stats!.expired_trials} icon={ClockAlert} accent="bg-gradient-to-br from-orange-500 to-orange-700" />
+          <Kpi title="Expired Trials" value={stats!.expired_trials} icon={AlertCircle} accent="bg-gradient-to-br from-orange-500 to-orange-700" />
           <Kpi title="Total Logins" value={stats!.total_logins} icon={LogIn} accent="bg-gradient-to-br from-blue-500 to-blue-700" />
           <Kpi title="DAU" value={stats!.dau} icon={Activity} accent="bg-gradient-to-br from-cyan-500 to-cyan-700" />
           <Kpi title="MAU" value={stats!.mau} icon={CalendarDays} accent="bg-gradient-to-br from-indigo-500 to-indigo-700" />
