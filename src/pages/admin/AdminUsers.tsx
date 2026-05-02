@@ -297,6 +297,7 @@ const AdminUsers = () => {
                     onClick={() => {
                       setPlanFilter(opt);
                       setShowFilterMenu(false);
+                      setPage(1);
                     }}
                     className={`w-full text-left px-3 py-2 text-sm capitalize transition-colors ${
                       planFilter === opt
@@ -305,6 +306,36 @@ const AdminUsers = () => {
                     }`}
                   >
                     {opt === "all" ? "All Plans" : opt}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowStatusMenu(!showStatusMenu)}
+            className="flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#13141a] border border-white/[0.08] text-sm text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all"
+          >
+            <span>{statusFilter === "all" ? "All Status" : statusFilter}</span>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          {showStatusMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowStatusMenu(false)} />
+              <div className="absolute right-0 top-full mt-1 w-36 bg-[#1a1b23] border border-white/[0.08] rounded-lg shadow-xl z-20 py-1 animate-fade-in">
+                {(["all", "Active", "Expired"] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => { setStatusFilter(opt); setShowStatusMenu(false); setPage(1); }}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      statusFilter === opt
+                        ? "text-violet-400 bg-violet-500/10"
+                        : "text-gray-400 hover:text-white hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {opt === "all" ? "All Status" : opt}
                   </button>
                 ))}
               </div>
