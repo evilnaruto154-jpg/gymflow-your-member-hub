@@ -525,7 +525,7 @@ const AdminUsers = () => {
               No users found.
             </div>
           )}
-          {filteredUsers.map((user) => (
+          {pagedUsers.map((user) => (
             <div
               key={user.id}
               className="p-4 space-y-3 hover:bg-white/[0.02] transition-colors cursor-pointer"
@@ -608,10 +608,30 @@ const AdminUsers = () => {
 
         {/* Footer */}
         {!usersQuery.isLoading && filteredUsers.length > 0 && (
-          <div className="px-4 py-3 border-t border-white/[0.04] flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-white/[0.04] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-xs text-gray-500">
-              Showing {filteredUsers.length} of {enrichedUsers.length} users
+              Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+              {Math.min(currentPage * PAGE_SIZE, filteredUsers.length)} of {filteredUsers.length}
             </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="px-3 text-xs text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
