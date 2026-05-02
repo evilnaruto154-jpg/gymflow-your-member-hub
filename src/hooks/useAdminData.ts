@@ -12,6 +12,33 @@ export interface AdminProfileRow {
   created_at: string;
   gym_name: string | null;
   login_provider: string | null;
+  last_login_at: string | null;
+  login_count: number;
+}
+
+export interface AdminStats {
+  total_users: number;
+  active_subs: number;
+  expired_subs: number;
+  active_trials: number;
+  expired_trials: number;
+  total_logins: number;
+  dau: number;
+  mau: number;
+  new_today: number;
+  new_week: number;
+  new_month: number;
+  paid_users: number;
+  trial_started_total: number;
+  signup_series: { day: string; n: number }[];
+  login_series: { day: string; n: number }[];
+  plan_distribution: { plan: string; n: number }[];
+}
+
+export async function fetchAdminStats(): Promise<AdminStats> {
+  const { data, error } = await supabase.rpc("admin_panel_get_stats" as any);
+  if (error) throw new Error(`Failed to load stats: ${error.message}`);
+  return data as AdminStats;
 }
 
 /**

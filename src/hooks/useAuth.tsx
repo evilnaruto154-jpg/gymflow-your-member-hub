@@ -32,6 +32,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // On successful OAuth / email sign-in, redirect to dashboard
         if (event === "SIGNED_IN" && session) {
+          // Record login event (fire-and-forget)
+          setTimeout(() => {
+            supabase.rpc("record_login_event" as any).then(({ error }) => {
+              if (error) console.warn("[Auth] record_login_event:", error.message);
+            });
+          }, 0);
+
           // Use setTimeout to avoid React state flush + navigate collision
           setTimeout(() => {
             navigate("/dashboard", { replace: true });

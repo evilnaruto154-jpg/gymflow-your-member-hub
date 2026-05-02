@@ -121,6 +121,27 @@ export type Database = {
         }
         Relationships: []
       }
+      login_events: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           created_at: string
@@ -243,6 +264,8 @@ export type Database = {
           email: string | null
           gym_name: string | null
           id: string
+          last_login_at: string | null
+          login_count: number
           login_provider: string | null
           name: string | null
           razorpay_customer_id: string | null
@@ -259,6 +282,8 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id: string
+          last_login_at?: string | null
+          login_count?: number
           login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
@@ -275,6 +300,8 @@ export type Database = {
           email?: string | null
           gym_name?: string | null
           id?: string
+          last_login_at?: string | null
+          login_count?: number
           login_provider?: string | null
           name?: string | null
           razorpay_customer_id?: string | null
@@ -321,6 +348,8 @@ export type Database = {
           email: string | null
           gym_name: string | null
           id: string
+          last_login_at: string | null
+          login_count: number
           login_provider: string | null
           name: string | null
           razorpay_customer_id: string | null
@@ -339,6 +368,25 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_panel_get_stats: { Args: never; Returns: Json }
+      admin_panel_list_profiles: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          gym_name: string
+          id: string
+          last_login_at: string
+          login_count: number
+          login_provider: string
+          name: string
+          subscription_end_date: string
+          subscription_plan: string
+          subscription_status: string
+          trial_end_date: string
+          trial_used: boolean
+        }[]
+      }
       admin_update_profile: {
         Args: { new_plan?: string; new_status: string; target_user_id: string }
         Returns: undefined
@@ -350,6 +398,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      record_login_event: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "staff"

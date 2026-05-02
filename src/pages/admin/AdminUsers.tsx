@@ -1,14 +1,17 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAdminProfiles, adminUpdateProfile, AdminProfileRow } from "@/hooks/useAdminData";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Users, Search, ArrowUpDown, ChevronDown, Mail, Calendar,
   CheckCircle, XCircle, AlertTriangle, RefreshCw,
+  ChevronLeft, ChevronRight, Shield, LogIn,
 } from "lucide-react";
 
-type SortField = "name" | "email" | "plan" | "expiry" | "created_at";
+type SortField = "name" | "email" | "plan" | "expiry" | "created_at" | "last_login";
 type SortDir = "asc" | "desc";
+
+const PAGE_SIZE = 10;
 
 function getUserPlan(user: AdminProfileRow): "free" | "trial" | "pro" {
   const now = new Date();
@@ -94,9 +97,12 @@ const AdminUsers = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [planFilter, setPlanFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "Active" | "Expired">("all");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [page, setPage] = useState(1);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   const usersQuery = useQuery({
@@ -150,6 +156,10 @@ const AdminUsers = () => {
       result = result.filter((u) => u._plan === planFilter);
     }
 
+    if (statusFilter !== "all") {
+      result = result.filter((u) => u._status === statusFilter);
+    }
+
     result = [...result].sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -168,12 +178,19 @@ const AdminUsers = () => {
         case "created_at":
           cmp = a.created_at.localeCompare(b.created_at);
           break;
+        case "last_login":
+          cmp = (a.last_login_at || "").localeCompare(b.last_login_at || "");
+          break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
 
     return result;
-  }, [enrichedUsers, search, planFilter, sortField, sortDir]);
+  }, [enrichedUsers, search, planFilter, statusFilter, sortField, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedUsers = filteredUsers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -280,6 +297,7 @@ const AdminUsers = () => {
                     onClick={() => {
                       setPlanFilter(opt);
                       setShowFilterMenu(false);
+                      setPage(1);
                     }}
                     className={`w-full text-left px-3 py-2 text-sm capitalize transition-colors ${
                       planFilter === opt
@@ -288,6 +306,36 @@ const AdminUsers = () => {
                     }`}
                   >
                     {opt === "all" ? "All Plans" : opt}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowStatusMenu(!showStatusMenu)}
+            className="flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#13141a] border border-white/[0.08] text-sm text-gray-300 hover:text-white hover:bg-white/[0.06] transition-all"
+          >
+            <span>{statusFilter === "all" ? "All Status" : statusFilter}</span>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          {showStatusMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowStatusMenu(false)} />
+              <div className="absolute right-0 top-full mt-1 w-36 bg-[#1a1b23] border border-white/[0.08] rounded-lg shadow-xl z-20 py-1 animate-fade-in">
+                {(["all", "Active", "Expired"] as const).map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => { setStatusFilter(opt); setShowStatusMenu(false); setPage(1); }}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      statusFilter === opt
+                        ? "text-violet-400 bg-violet-500/10"
+                        : "text-gray-400 hover:text-white hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {opt === "all" ? "All Status" : opt}
                   </button>
                 ))}
               </div>
@@ -306,9 +354,12 @@ const AdminUsers = () => {
                 {[
                   { label: "Name", field: "name" as SortField },
                   { label: "Email", field: "email" as SortField },
+                  { label: "Role", field: null },
                   { label: "Plan", field: "plan" as SortField },
                   { label: "Plan Expiry", field: "expiry" as SortField },
                   { label: "Status", field: null },
+                  { label: "Last Login", field: "last_login" as SortField },
+                  { label: "Logins", field: null },
                   { label: "Joined", field: "created_at" as SortField },
                   { label: "Actions", field: null },
                 ].map((col) => (
@@ -338,7 +389,7 @@ const AdminUsers = () => {
             <tbody className="divide-y divide-white/[0.03]">
               {usersQuery.isLoading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={10} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3 text-gray-400">
                       <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-500/30 border-t-violet-500" />
                       <span className="text-sm">Loading users...</span>
@@ -349,7 +400,7 @@ const AdminUsers = () => {
               {!usersQuery.isLoading && filteredUsers.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={10}
                     className="px-4 py-16 text-center text-gray-500 text-sm"
                   >
                     {search || planFilter !== "all"
@@ -358,7 +409,7 @@ const AdminUsers = () => {
                   </td>
                 </tr>
               )}
-              {filteredUsers.map((user, idx) => (
+              {pagedUsers.map((user, idx) => (
                 <tr
                   key={user.id}
                   className="hover:bg-white/[0.02] transition-colors duration-150 animate-fade-in"
@@ -369,13 +420,24 @@ const AdminUsers = () => {
                       <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/20 flex items-center justify-center text-xs font-medium text-violet-300 shrink-0">
                         {(user.name || user.email || "?").charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm text-white font-medium truncate max-w-[180px]">
-                        {user.name || "—"}
-                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium truncate max-w-[180px]">
+                          {user.name || "—"}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-mono truncate max-w-[180px]">
+                          {user.id.slice(0, 8)}…
+                        </p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="text-sm text-gray-400">{user.email || "—"}</span>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                      <Shield className="h-3 w-3" />
+                      OWNER
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <PlanBadge plan={user._plan} />
@@ -389,6 +451,19 @@ const AdminUsers = () => {
                   </td>
                   <td className="px-4 py-3.5">
                     <StatusBadge status={user._status} />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {user.last_login_at
+                        ? formatDistanceToNow(new Date(user.last_login_at), { addSuffix: true })
+                        : "Never"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-300">
+                      <LogIn className="h-3 w-3 text-gray-500" />
+                      {user.login_count ?? 0}
+                    </span>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="text-sm text-gray-500 whitespace-nowrap">
@@ -450,7 +525,7 @@ const AdminUsers = () => {
               No users found.
             </div>
           )}
-          {filteredUsers.map((user) => (
+          {pagedUsers.map((user) => (
             <div
               key={user.id}
               className="p-4 space-y-3 hover:bg-white/[0.02] transition-colors cursor-pointer"
@@ -533,10 +608,30 @@ const AdminUsers = () => {
 
         {/* Footer */}
         {!usersQuery.isLoading && filteredUsers.length > 0 && (
-          <div className="px-4 py-3 border-t border-white/[0.04] flex items-center justify-between">
+          <div className="px-4 py-3 border-t border-white/[0.04] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-xs text-gray-500">
-              Showing {filteredUsers.length} of {enrichedUsers.length} users
+              Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+              {Math.min(currentPage * PAGE_SIZE, filteredUsers.length)} of {filteredUsers.length}
             </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="px-3 text-xs text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-white/[0.04] border border-white/[0.08] text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>

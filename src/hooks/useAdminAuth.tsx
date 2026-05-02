@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 const ADMIN_EMAIL = "admin@gymflow.com";
-const ADMIN_PASSWORD = "admin";
+const ADMIN_PASSWORD = "mullahusen99";
 const STORAGE_KEY = "gymflow-admin-auth";
 
 interface AdminAuthContextType {
