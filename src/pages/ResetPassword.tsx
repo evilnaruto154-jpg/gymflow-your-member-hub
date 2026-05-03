@@ -16,8 +16,7 @@ function scorePassword(pw: string) {
     number: /[0-9]/.test(pw),
     symbol: /[^A-Za-z0-9]/.test(pw),
   };
-  const score = Object.values(checks).filter(Boolean).length;
-  return { checks, score };
+  return { checks, score: Object.values(checks).filter(Boolean).length };
 }
 
 const ResetPassword = () => {
@@ -30,8 +29,6 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Supabase v2 fires PASSWORD_RECOVERY when the user lands via a reset link.
-    // The hash also contains type=recovery; check both for robustness.
     const hash = window.location.hash || "";
     const search = window.location.search || "";
     if (hash.includes("type=recovery") || search.includes("type=recovery")) {
@@ -40,10 +37,9 @@ const ResetPassword = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setIsRecovery(true);
     });
-    // After a brief tick, if we still don't have recovery, mark as false (invalid link)
     const t = setTimeout(() => {
       setIsRecovery((prev) => (prev === null ? false : prev));
-    }, 800);
+    }, 1200);
     return () => { subscription.unsubscribe(); clearTimeout(t); };
   }, []);
 
@@ -68,7 +64,6 @@ const ResetPassword = () => {
       setConfirming(false);
       return;
     }
-    // Sign out so the user must log in fresh with the new password
     await supabase.auth.signOut();
     toast({ title: "Password updated", description: "Sign in with your new password." });
     navigate("/auth", { replace: true });
@@ -113,9 +108,7 @@ const ResetPassword = () => {
           <h1 className="text-3xl font-bold font-display text-foreground">GymFlow</h1>
         </div>
         <Card>
-          <CardHeader>
-            <CardTitle>Set a new password</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Set a new password</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleReset} className="space-y-4">
               <div className="space-y-2">
@@ -168,55 +161,6 @@ const ResetPassword = () => {
 
               <Button type="submit" className="w-full" disabled={!canSubmit}>
                 {confirming ? "Updating..." : "Update password"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default ResetPassword;
-    } else {
-      toast({ title: "Password updated!", description: "You can now sign in with your new password." });
-      navigate("/auth", { replace: true });
-    }
-    setConfirming(false);
-  };
-
-  if (!isRecovery) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">Invalid or expired reset link. Please request a new one.</p>
-            <Button className="mt-4" onClick={() => navigate("/auth")}>Go to Login</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary">
-            <Dumbbell className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold font-display text-foreground">GymFlow</h1>
-        </div>
-        <Card>
-          <CardHeader><CardTitle>Set New Password</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={handleReset} className="space-y-4">
-              <div className="space-y-2">
-                <Label>New Password</Label>
-                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
-              </div>
-              <Button type="submit" className="w-full" disabled={confirming}>
-                {confirming ? "Updating..." : "Update Password"}
               </Button>
             </form>
           </CardContent>
