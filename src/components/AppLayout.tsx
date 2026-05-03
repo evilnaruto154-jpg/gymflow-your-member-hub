@@ -28,7 +28,7 @@ export function AppLayout() {
   const navigate = useNavigate();
 
   const planLabel = isTrialing
-    ? `Trial · ${trialDaysLeft}d left`
+    ? `PRO Trial · ${trialDaysLeft}d left`
     : isActive
       ? (profile?.subscription_plan?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase()) || "Active")
       : trialExpired

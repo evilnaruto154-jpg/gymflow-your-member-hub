@@ -41,8 +41,8 @@ export function useProfile() {
 
       if (!data) {
         // Profile not found — this should not happen due to trigger,
-        // but we create it defensively.
-        console.warn("[Profile] No profile found, creating one...");
+        // but we create it defensively with auto-trial.
+        console.warn("[Profile] No profile found, creating one with 7-day trial...");
         const now = new Date();
         const trialEnd = new Date(now);
         trialEnd.setDate(trialEnd.getDate() + 7);
@@ -52,7 +52,7 @@ export function useProfile() {
           email: user.email ?? null,
           name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? "",
           subscription_status: "trialing" as const,
-          subscription_plan: "free",
+          subscription_plan: "pro_trial",
           trial_start_date: now.toISOString(),
           trial_end_date: trialEnd.toISOString(),
           trial_used: false,
@@ -68,10 +68,11 @@ export function useProfile() {
           console.error("[Profile] Create error:", createError.message);
           throw new Error(createError.message);
         }
+        console.log("[Profile] ✅ Created new profile with 7-day trial");
         return created as Profile;
       }
 
-      // Self-heal: if status is missing/incomplete, set a new trial
+      // Self-heal: if status is missing/incomplete, assign a new trial
       if (
         !data.subscription_status ||
         data.subscription_status === "incomplete" ||
@@ -84,7 +85,7 @@ export function useProfile() {
 
         const updates = {
           subscription_status: "trialing",
-          subscription_plan: "free",
+          subscription_plan: "pro_trial",
           trial_start_date: now.toISOString(),
           trial_end_date: trialEnd.toISOString(),
           trial_used: false,
@@ -97,6 +98,30 @@ export function useProfile() {
 
         if (updateError) {
           console.error("[Profile] Self-heal update error:", updateError.message);
+        }
+
+        return { ...data, ...updates } as Profile;
+      }
+
+      // Self-heal: if trialing but trial_end_date has passed, mark expired
+      if (
+        data.subscription_status === "trialing" &&
+        data.trial_end_date &&
+        new Date(data.trial_end_date).getTime() < Date.now()
+      ) {
+        console.log("[Profile] Auto-expiring trial (end date passed)...");
+        const updates = {
+          subscription_status: "expired",
+          trial_used: true,
+        };
+
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update(updates)
+          .eq("id", user.id);
+
+        if (updateError) {
+          console.error("[Profile] Auto-expire error:", updateError.message);
         }
 
         return { ...data, ...updates } as Profile;
@@ -145,13 +170,17 @@ export function useProfile() {
       )
     : 0;
 
-  // Trial is expired if trialing but end date has passed
+  // Trial is expired ONLY if:
+  //   - Status is "trialing" but end date has passed, OR
+  //   - Status is explicitly "expired" or "blocked"
   const trialExpired =
     (isTrialing && trialDaysLeft <= 0) ||
     isExpired ||
     isBlocked;
 
-  // Has full access if: active subscription OR trialing with days remaining
+  // Has full access if:
+  //   - Active paid subscription, OR
+  //   - Trialing with days remaining (= full Pro access during trial)
   const hasAccess = isActive || (isTrialing && trialDaysLeft > 0);
 
   return {

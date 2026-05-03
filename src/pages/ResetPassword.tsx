@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Dumbbell, Check, X, Eye, EyeOff } from "lucide-react";
+import { Dumbbell, KeyRound, CheckCircle, AlertTriangle, Loader2, Check, X, Eye, EyeOff } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+type PageState = "loading" | "form" | "success" | "error";
 
 function scorePassword(pw: string) {
   const checks = {
@@ -21,31 +24,67 @@ function scorePassword(pw: string) {
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-  const [isRecovery, setIsRecovery] = useState<null | boolean>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pageState, setPageState] = useState<PageState>("loading");
+  const [errorMessage, setErrorMessage] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hash = window.location.hash || "";
-    const search = window.location.search || "";
-    if (hash.includes("type=recovery") || search.includes("type=recovery")) {
-      setIsRecovery(true);
-    }
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setIsRecovery(true);
-    });
-    const t = setTimeout(() => {
-      setIsRecovery((prev) => (prev === null ? false : prev));
-    }, 1200);
-    return () => { subscription.unsubscribe(); clearTimeout(t); };
+    let cancelled = false;
+
+    const checkSession = async () => {
+      // First, try to extract tokens from URL hash (Supabase implicit flow)
+      const hash = window.location.hash;
+      if (hash && hash.includes("access_token") && hash.includes("type=recovery")) {
+        console.log("[ResetPassword] Found recovery tokens in URL hash");
+        await new Promise((r) => setTimeout(r, 500));
+      }
+
+      // Also handle PKCE flow: ?code=... query param
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        console.log("[ResetPassword] Found PKCE code, exchanging for session...");
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("[ResetPassword] Code exchange failed:", error.message);
+          if (!cancelled) {
+            setErrorMessage("Invalid or expired reset link. Please request a new one.");
+            setPageState("error");
+          }
+          return;
+        }
+      }
+
+      // Check if we have a valid session now
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!cancelled) {
+        if (session) {
+          console.log("[ResetPassword] ✅ Valid session, showing password form");
+          setPageState("form");
+        } else {
+          console.warn("[ResetPassword] No session found");
+          setErrorMessage("Invalid or expired reset link. Please request a new one.");
+          setPageState("error");
+        }
+      }
+    };
+
+    const timer = setTimeout(checkSession, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   const { checks, score } = scorePassword(password);
-  const passwordsMatch = password.length > 0 && password === confirm;
-  const canSubmit = score >= 4 && passwordsMatch && !confirming;
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
+  const canSubmit = score >= 4 && passwordsMatch && !submitting;
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,36 +96,97 @@ const ResetPassword = () => {
       toast({ title: "Passwords don't match", description: "Please confirm your new password.", variant: "destructive" });
       return;
     }
-    setConfirming(true);
+
+    setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password });
+
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
-      setConfirming(false);
+      setSubmitting(false);
       return;
     }
-    await supabase.auth.signOut();
-    toast({ title: "Password updated", description: "Sign in with your new password." });
-    navigate("/auth", { replace: true });
-    setConfirming(false);
+
+    setPageState("success");
+    toast({ title: "Password updated", description: "Your password has been changed successfully." });
+
+    setTimeout(async () => {
+      await supabase.auth.signOut();
+      navigate("/auth", { replace: true });
+    }, 2500);
   };
 
-  if (isRecovery === null) {
+  const handleRequestNewLink = () => {
+    navigate("/auth");
+  };
+
+  if (pageState === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="absolute top-4 right-4"><ThemeToggle /></div>
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+          <p className="text-muted-foreground text-sm">Verifying your reset link…</p>
+        </div>
       </div>
     );
   }
 
-  if (isRecovery === false) {
+  if (pageState === "error") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center space-y-3">
-            <p className="text-muted-foreground">This reset link is invalid or has expired.</p>
-            <Button onClick={() => navigate("/auth")}>Request a new link</Button>
-          </CardContent>
-        </Card>
+        <div className="absolute top-4 right-4"><ThemeToggle /></div>
+        <div className="w-full max-w-md animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary">
+              <Dumbbell className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-3xl font-bold font-display text-foreground">GymFlow</h1>
+          </div>
+          <Card className="border-destructive/30 bg-card">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="flex items-center justify-center">
+                <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <AlertTriangle className="h-7 w-7 text-destructive" />
+                </div>
+              </div>
+              <h2 className="text-lg font-bold font-display text-foreground">Link Expired</h2>
+              <p className="text-muted-foreground text-sm">{errorMessage}</p>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button onClick={handleRequestNewLink} className="w-full">Request New Reset Link</Button>
+                <Button variant="ghost" onClick={() => navigate("/auth")} className="w-full text-muted-foreground">Back to Login</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (pageState === "success") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="absolute top-4 right-4"><ThemeToggle /></div>
+        <div className="w-full max-w-md animate-fade-in">
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary">
+              <Dumbbell className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-3xl font-bold font-display text-foreground">GymFlow</h1>
+          </div>
+          <Card className="border-success/30 bg-card">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="flex items-center justify-center">
+                <div className="h-14 w-14 rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle className="h-7 w-7 text-success" />
+                </div>
+              </div>
+              <h2 className="text-lg font-bold font-display text-foreground">Password Updated!</h2>
+              <p className="text-muted-foreground text-sm">Your password has been changed successfully. Redirecting to login…</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -100,19 +200,28 @@ const ResetPassword = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="absolute top-4 right-4"><ThemeToggle /></div>
+      <div className="w-full max-w-md animate-fade-in">
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary">
             <Dumbbell className="h-6 w-6 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold font-display text-foreground">GymFlow</h1>
         </div>
-        <Card>
-          <CardHeader><CardTitle>Set a new password</CardTitle></CardHeader>
+        <Card className="border-border bg-card">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <KeyRound className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-xl font-display">Set New Password</CardTitle>
+            <CardDescription>Enter your new password below</CardDescription>
+          </CardHeader>
           <CardContent>
             <form onSubmit={handleReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-pw">New password</Label>
+                <Label htmlFor="new-pw">New Password</Label>
                 <div className="relative">
                   <Input
                     id="new-pw"
@@ -123,6 +232,7 @@ const ResetPassword = () => {
                     minLength={8}
                     placeholder="••••••••"
                     autoComplete="new-password"
+                    autoFocus
                   />
                   <button
                     type="button"
@@ -136,17 +246,17 @@ const ResetPassword = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-pw">Confirm password</Label>
+                <Label htmlFor="confirm-pw">Confirm Password</Label>
                 <Input
                   id="confirm-pw"
                   type={showPw ? "text" : "password"}
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   placeholder="••••••••"
                   autoComplete="new-password"
                 />
-                {confirm.length > 0 && !passwordsMatch && (
+                {confirmPassword.length > 0 && !passwordsMatch && (
                   <p className="text-xs text-destructive">Passwords don't match.</p>
                 )}
               </div>
@@ -160,7 +270,14 @@ const ResetPassword = () => {
               </ul>
 
               <Button type="submit" className="w-full" disabled={!canSubmit}>
-                {confirming ? "Updating..." : "Update password"}
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update password"
+                )}
               </Button>
             </form>
           </CardContent>

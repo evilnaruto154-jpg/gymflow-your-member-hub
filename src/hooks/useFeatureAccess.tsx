@@ -9,12 +9,15 @@ export type Feature =
   | "inventory"
   | "analytics";
 
-// Trial: access to all core features
-const TRIAL_FEATURES: Feature[] = [
+// All features available in the system
+const ALL_FEATURES: Feature[] = [
   "members",
   "attendance",
   "expenses",
   "inventory",
+  "whatsapp",
+  "analytics",
+  "reports",
 ];
 
 // Starter: adds analytics + whatsapp
@@ -28,15 +31,7 @@ const STARTER_FEATURES: Feature[] = [
 ];
 
 // Pro: all features
-const PRO_FEATURES: Feature[] = [
-  "members",
-  "attendance",
-  "expenses",
-  "inventory",
-  "whatsapp",
-  "analytics",
-  "reports",
-];
+const PRO_FEATURES: Feature[] = ALL_FEATURES;
 
 export function useFeatureAccess() {
   const { isActive, isTrialing, trialExpired, hasAccess, profile } =
@@ -51,24 +46,28 @@ export function useFeatureAccess() {
     isActive && profile?.subscription_plan?.includes("starter");
 
   const canAccess = (feature: Feature): boolean => {
+    // Trial users get FULL PRO access — no restrictions during trial
+    if (isTrialing && !trialExpired) {
+      return PRO_FEATURES.includes(feature);
+    }
+
     if (isActive) {
       if (isPro) return PRO_FEATURES.includes(feature);
       if (isStarter) return STARTER_FEATURES.includes(feature);
       // Active but no specific plan — give starter access
       return STARTER_FEATURES.includes(feature);
     }
-    if (isTrialing && !trialExpired) {
-      return TRIAL_FEATURES.includes(feature);
-    }
+
     return false;
   };
 
   const isLocked = (feature: Feature): boolean => !canAccess(feature);
 
   const getMemberLimit = (): number => {
+    // Trial users get UNLIMITED members — same as Pro
+    if (isTrialing && !trialExpired) return Infinity;
     if (isActive && isPro) return Infinity;
     if (isActive && isStarter) return 100;
-    if (isTrialing && !trialExpired) return 50;
     return 0;
   };
 

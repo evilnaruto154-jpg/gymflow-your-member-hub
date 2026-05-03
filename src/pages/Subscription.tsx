@@ -26,22 +26,29 @@ const Subscription = () => {
   };
 
   const handleStartTrial = async () => {
-    // Edge case 1: User not logged in (though protected route handles this, it's safe to check)
+    // Edge case 1: User not logged in
     if (!user) {
       toast({ title: "Authentication Required", description: "You must be logged in to activate a trial.", variant: "destructive" });
       navigate("/auth", { replace: true });
       return;
     }
 
-    // Edge case 2: Duplicate trial or expired trial
-    if (profile?.trial_used || trialExpired) {
-      toast({ title: "Trial Unavailable", description: "You have already used your free trial.", variant: "destructive" });
+    // Edge case 2: Trial already used (prevent abuse — 1 trial per user)
+    if (profile?.trial_used) {
+      toast({ title: "Trial Unavailable", description: "You have already used your free trial. Please subscribe to continue.", variant: "destructive" });
       return;
     }
 
     // Edge case 3: Trial already active
-    if (isTrialing) {
-      toast({ title: "Trial Active", description: "Your free trial is already in progress." });
+    if (isTrialing && !trialExpired) {
+      toast({ title: "Trial Active", description: "Your free trial is already in progress. Enjoy full PRO access!" });
+      navigate("/dashboard");
+      return;
+    }
+
+    // Edge case 4: Already has active subscription
+    if (isActive) {
+      toast({ title: "Already Subscribed", description: "You already have an active subscription." });
       navigate("/dashboard");
       return;
     }
@@ -54,15 +61,16 @@ const Subscription = () => {
 
       await updateProfile.mutateAsync({
         subscription_status: "trialing",
-        subscription_plan: "free_trial",
+        subscription_plan: "pro_trial",
         trial_start_date: now.toISOString(),
         trial_end_date: trialEnd.toISOString(),
-        trial_used: true,
+        // trial_used stays false during active trial — set to true only on expiry
+        trial_used: false,
       });
 
       toast({
-        title: "Trial Started Successfully!",
-        description: "Your 7-day free trial is now active. Enjoy full access!",
+        title: "🎉 Trial Started Successfully!",
+        description: "Your 7-day free PRO trial is now active. You have full access to all features!",
       });
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
@@ -76,12 +84,16 @@ const Subscription = () => {
     }
   };
 
+  // Determine if user can start a trial:
+  // Not currently active, not currently trialing, and hasn't used trial before
+  const canStartTrial = !isActive && !isTrialing && !profile?.trial_used;
+
   const statusBadge = isActive
     ? { label: "Active", className: "bg-success/15 text-success border-success/30" }
     : trialExpired
       ? { label: "Trial Expired", className: "bg-destructive/15 text-destructive border-destructive/30" }
       : isTrialing
-        ? { label: `Trial — ${trialDaysLeft} days left`, className: "bg-warning/15 text-warning border-warning/30" }
+        ? { label: `PRO Trial — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left`, className: "bg-warning/15 text-warning border-warning/30" }
         : { label: "No Plan", className: "bg-muted text-muted-foreground border-border" };
 
   return (
@@ -94,10 +106,10 @@ const Subscription = () => {
               <Sparkles className="h-8 w-8 text-success" />
               <div>
                 <p className="font-display font-bold text-lg text-foreground">
-                  🎉 Your 7-Day FREE Trial is Active!
+                  🎉 Your 7-Day FREE PRO Trial is Active!
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining — enjoy full PRO access
+                  {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining — you have full access to ALL Pro features
                 </p>
               </div>
             </div>
@@ -108,13 +120,32 @@ const Subscription = () => {
         </Card>
       )}
 
+      {/* Trial Expired Banner */}
+      {trialExpired && (
+        <Card className="border-destructive/30 bg-gradient-to-r from-destructive/5 to-destructive/10">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+            <div className="flex items-center gap-3">
+              <Crown className="h-8 w-8 text-destructive" />
+              <div>
+                <p className="font-display font-bold text-lg text-foreground">
+                  Your Free Trial Has Expired
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Subscribe to a plan below to continue using GymFlow with full access
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center">
         <h1 className="text-3xl font-bold font-display text-foreground">
-          {isTrialing && !trialExpired ? "You Have Full Access" : "Choose Your Plan"}
+          {isTrialing && !trialExpired ? "You Have Full PRO Access" : "Choose Your Plan"}
         </h1>
         <p className="text-muted-foreground mt-2">
           {isTrialing && !trialExpired
-            ? "Your trial includes all PRO features. Subscribe anytime before it ends."
+            ? "Your trial includes ALL Pro features — unlimited members, reports, analytics, and more. Subscribe anytime before it ends."
             : "Unlock the full potential of GymFlow Pro"}
         </p>
         <Badge variant="outline" className={`mt-3 ${statusBadge.className}`}>
@@ -122,15 +153,15 @@ const Subscription = () => {
         </Badge>
       </div>
 
-      {/* Trial CTA */}
-      {!isActive && !isTrialing && !profile?.trial_used && (
+      {/* Trial CTA — show only if user hasn't used trial yet */}
+      {canStartTrial && (
         <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 backdrop-blur-sm">
           <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
             <div className="flex items-center gap-3">
               <Sparkles className="h-6 w-6 text-primary" />
               <div>
                 <p className="font-display font-bold text-foreground">Start your 7-day FREE PRO Trial</p>
-                <p className="text-sm text-muted-foreground">Full PRO access. No credit card required.</p>
+                <p className="text-sm text-muted-foreground">Full PRO access to all features. No credit card required. No restrictions.</p>
               </div>
             </div>
             <Button size="lg" onClick={handleStartTrial} disabled={startingTrial}>

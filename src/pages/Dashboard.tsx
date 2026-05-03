@@ -160,7 +160,7 @@ const Dashboard = () => {
         </div>
         {isTrialing ? (
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 px-4 py-1.5 text-sm font-semibold">
-            Trial · {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Left
+            PRO Trial · {trialDaysLeft} Day{trialDaysLeft !== 1 ? "s" : ""} Left
           </Badge>
         ) : isActive ? (
           <Badge variant="outline" className="bg-success/10 text-success border-success/25 px-4 py-1.5 text-sm font-semibold">

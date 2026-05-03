@@ -1,34 +1,42 @@
 import { useProfile } from "@/hooks/useProfile";
-import { Clock } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function TrialBanner() {
-  const { isTrialing, trialDaysLeft, trialExpired } = useProfile();
+  const { isTrialing, trialDaysLeft, trialExpired, isExpired } = useProfile();
   const navigate = useNavigate();
 
-  if (!isTrialing) return null;
+  // Show banner for: active trial, expired trial, or expired subscription
+  if (!isTrialing && !isExpired) return null;
+
+  const isUrgent = isTrialing && trialDaysLeft <= 2 && trialDaysLeft > 0;
+  const isExpiredState = trialExpired;
 
   return (
     <div
       className={`flex items-center justify-between px-4 py-2 text-sm font-medium ${
-        trialExpired
+        isExpiredState
           ? "bg-destructive text-destructive-foreground"
-          : trialDaysLeft <= 2
+          : isUrgent
             ? "bg-warning text-warning-foreground"
             : "bg-primary/10 text-primary"
       }`}
     >
       <div className="flex items-center gap-2">
-        <Clock className="h-4 w-4" />
-        {trialExpired
-          ? "Your free trial has expired."
-          : `Your free trial ends in ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""}.`}
+        {isExpiredState ? (
+          <AlertTriangle className="h-4 w-4" />
+        ) : (
+          <Clock className="h-4 w-4" />
+        )}
+        {isExpiredState
+          ? "Your free PRO trial has expired. Subscribe to continue using all features."
+          : `🎉 PRO Trial active — ${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} of full access remaining.`}
       </div>
       <button
         onClick={() => navigate("/subscription")}
         className="underline hover:no-underline font-semibold"
       >
-        {trialExpired ? "Subscribe Now" : "Upgrade"}
+        {isExpiredState ? "Subscribe Now" : "View Plans"}
       </button>
     </div>
   );
