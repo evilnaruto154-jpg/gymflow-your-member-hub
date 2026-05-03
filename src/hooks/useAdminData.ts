@@ -50,24 +50,16 @@ export async function fetchAdminStats(): Promise<AdminStats> {
  * local authentication (hardcoded credentials), not Supabase auth.
  */
 export async function fetchAdminProfiles(): Promise<AdminProfileRow[]> {
-  console.log("[Admin] Fetching profiles via admin_panel_list_profiles RPC...");
-
   const { data, error } = await supabase.rpc("admin_panel_list_profiles" as any);
 
   if (error) {
-    console.error("[Admin] RPC error:", error.message, error.details, error.hint);
     throw new Error(
       `Failed to load users: ${error.message}. ` +
-      `Make sure you have run the latest migration SQL in your Supabase SQL Editor.`
+      `Please retry. If it persists, contact support.`
     );
   }
 
-  if (!data || !Array.isArray(data)) {
-    console.warn("[Admin] RPC returned empty/null data");
-    return [];
-  }
-
-  console.log(`[Admin] ✅ Loaded ${data.length} profiles`);
+  if (!data || !Array.isArray(data)) return [];
   return data as AdminProfileRow[];
 }
 
