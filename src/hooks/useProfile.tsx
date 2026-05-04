@@ -27,6 +27,7 @@ export function useProfile() {
     queryKey: ["profile", user?.id],
     queryFn: async (): Promise<Profile | null> => {
       if (!user) return null;
+      console.log("[Profile] Fetching profile for user:", user.id);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -61,6 +62,13 @@ export function useProfile() {
         if (createError) throw new Error(createError.message);
         return created as Profile;
       }
+
+      console.log("[Profile] Fetched:", {
+        status: data.subscription_status,
+        plan: data.subscription_plan,
+        trial_end: data.trial_end_date,
+        trial_used: data.trial_used,
+      });
 
       // Self-heal: if status is missing/incomplete, assign a new trial
       if (
@@ -110,22 +118,64 @@ export function useProfile() {
       return data as Profile;
     },
     enabled: !!user,
-    staleTime: 60_000,
+    staleTime: 5_000, // Reduced from 60s to 5s — prevents stale "No Plan" after trial activation
     refetchOnWindowFocus: true,
   });
 
   const updateProfile = useMutation({
     mutationFn: async (updates: Partial<Profile>) => {
       if (!user) throw new Error("Not authenticated");
+      console.log("[Profile] Updating profile:", updates);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .update(updates)
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select()
+        .single();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("[Profile] Update error:", error.message);
+        throw new Error(error.message);
+      }
+
+      console.log("[Profile] ✅ Update successful, DB returned:", {
+        status: data?.subscription_status,
+        plan: data?.subscription_plan,
+      });
+
+      return data as Profile;
     },
-    onSuccess: () => {
+    onMutate: async (updates) => {
+      // Cancel outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["profile", user?.id] });
+
+      // Snapshot previous value
+      const previousProfile = queryClient.getQueryData<Profile | null>(["profile", user?.id]);
+
+      // Optimistically update the cache immediately
+      if (previousProfile) {
+        queryClient.setQueryData<Profile>(["profile", user?.id], {
+          ...previousProfile,
+          ...updates,
+        });
+        console.log("[Profile] ⚡ Optimistic update applied:", {
+          status: updates.subscription_status || previousProfile.subscription_status,
+          plan: updates.subscription_plan || previousProfile.subscription_plan,
+        });
+      }
+
+      return { previousProfile };
+    },
+    onError: (_err, _updates, context) => {
+      // Rollback on error
+      if (context?.previousProfile) {
+        queryClient.setQueryData(["profile", user?.id], context.previousProfile);
+        console.error("[Profile] ❌ Rolling back optimistic update due to error");
+      }
+    },
+    onSettled: () => {
+      // Always refetch after mutation settles to ensure server state
       queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
     },
   });

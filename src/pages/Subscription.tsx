@@ -59,7 +59,13 @@ const Subscription = () => {
       const trialEnd = new Date(now);
       trialEnd.setDate(trialEnd.getDate() + 7);
 
-      await updateProfile.mutateAsync({
+      console.log("[Trial] Starting trial activation...", {
+        userId: user.id,
+        trialStart: now.toISOString(),
+        trialEnd: trialEnd.toISOString(),
+      });
+
+      const result = await updateProfile.mutateAsync({
         subscription_status: "trialing",
         subscription_plan: "pro_trial",
         trial_start_date: now.toISOString(),
@@ -68,12 +74,18 @@ const Subscription = () => {
         trial_used: false,
       });
 
+      console.log("[Trial] ✅ Trial activated successfully:", result);
+
       toast({
         title: "🎉 Trial Started Successfully!",
         description: "Your 7-day free PRO trial is now active. You have full access to all features!",
       });
+
+      // Small delay to allow optimistic cache update to propagate to all subscribers
+      await new Promise((resolve) => setTimeout(resolve, 100));
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
+      console.error("[Trial] ❌ Trial activation failed:", err);
       toast({
         title: "Error",
         description: err?.message || "Could not start trial. Please try again.",

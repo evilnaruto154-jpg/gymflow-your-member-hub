@@ -15,29 +15,32 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const errorParam = params.get("error");
-      const errorDescription = params.get("error_description");
-
-      if (errorParam) {
-        console.error("OAuth error:", errorParam, errorDescription);
-        navigate(`/auth?error=${encodeURIComponent(errorDescription || errorParam)}`, { replace: true });
-        return;
-      }
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+      try {
+        console.log("Processing Auth Callback...");
+        
+        // Supabase auto-handles the OAuth code/token in the URL.
+        // We add a small delay to ensure it finishes parsing before we fetch session.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        
+        const { data, error } = await supabase.auth.getSession();
+        
         if (error) {
-          console.error("Code exchange failed:", error.message);
+          console.error("Session error in callback:", error.message);
           navigate("/auth", { replace: true });
           return;
         }
-      }
 
-      // Session is now set; onAuthStateChange will also fire.
-      // Navigate to dashboard as a safe fallback.
-      navigate("/dashboard", { replace: true });
+        if (data?.session) {
+          console.log("Session successfully retrieved, redirecting to dashboard");
+          navigate("/dashboard", { replace: true });
+        } else {
+          console.log("No session found in callback, redirecting to auth");
+          navigate("/auth", { replace: true });
+        }
+      } catch (err) {
+        console.error("Error during auth callback:", err);
+        navigate("/auth", { replace: true });
+      }
     };
 
     handleCallback();
