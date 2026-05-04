@@ -1,0 +1,16 @@
+CREATE INDEX IF NOT EXISTS idx_members_user_id ON public.members(user_id);
+CREATE INDEX IF NOT EXISTS idx_members_expiry_date ON public.members(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON public.payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_member_id ON public.payments(member_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_user_id ON public.attendance(user_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_member_id ON public.attendance(member_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_check_in_date ON public.attendance(check_in_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON public.expenses(user_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON public.expenses(date);
+CREATE INDEX IF NOT EXISTS idx_inventory_user_id ON public.inventory(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_login_events_user_id ON public.login_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_login_events_created_at ON public.login_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_profiles_subscription_status ON public.profiles(subscription_status);
+CREATE INDEX IF NOT EXISTS idx_profiles_created_at ON public.profiles(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON public.user_roles(user_id);
