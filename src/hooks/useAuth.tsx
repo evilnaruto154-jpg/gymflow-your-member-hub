@@ -31,32 +31,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // PASSWORD_RECOVERY event — redirect to reset-password page, NOT dashboard
         if (event === "PASSWORD_RECOVERY" && session) {
-          console.log("[Auth] PASSWORD_RECOVERY detected, redirecting to /reset-password");
           setTimeout(() => {
             navigate("/reset-password", { replace: true });
           }, 0);
-          return; // Do NOT fall through to SIGNED_IN handling
+          return;
         }
 
         // On successful OAuth / email sign-in, redirect to dashboard
         // But SKIP if user is already on /reset-password (they're resetting their password)
         if (event === "SIGNED_IN" && session) {
-          // Don't redirect away from reset-password page
           if (window.location.pathname === "/reset-password") {
-            console.log("[Auth] SIGNED_IN on /reset-password — staying on page");
             return;
           }
 
-          // Record login event (fire-and-forget)
           setTimeout(() => {
-            supabase.rpc("record_login_event" as any).then(({ error }) => {
-              if (error) console.warn("[Auth] record_login_event:", error.message);
-            });
+            supabase.rpc("record_login_event" as any);
           }, 0);
 
-          // Use setTimeout to avoid React state flush + navigate collision
           setTimeout(() => {
             navigate("/dashboard", { replace: true });
           }, 0);

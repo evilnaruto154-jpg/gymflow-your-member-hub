@@ -34,15 +34,9 @@ export function useProfile() {
         .eq("id", user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error("[Profile] Fetch error:", error.message);
-        throw new Error(error.message);
-      }
+      if (error) throw new Error(error.message);
 
       if (!data) {
-        // Profile not found — this should not happen due to trigger,
-        // but we create it defensively with auto-trial.
-        console.warn("[Profile] No profile found, creating one with 7-day trial...");
         const now = new Date();
         const trialEnd = new Date(now);
         trialEnd.setDate(trialEnd.getDate() + 7);
@@ -64,11 +58,7 @@ export function useProfile() {
           .select()
           .single();
 
-        if (createError) {
-          console.error("[Profile] Create error:", createError.message);
-          throw new Error(createError.message);
-        }
-        console.log("[Profile] ✅ Created new profile with 7-day trial");
+        if (createError) throw new Error(createError.message);
         return created as Profile;
       }
 
@@ -78,7 +68,6 @@ export function useProfile() {
         data.subscription_status === "incomplete" ||
         data.subscription_status === ""
       ) {
-        console.log("[Profile] Self-healing: setting trial status...");
         const now = new Date();
         const trialEnd = new Date(now);
         trialEnd.setDate(trialEnd.getDate() + 7);
@@ -91,14 +80,10 @@ export function useProfile() {
           trial_used: false,
         };
 
-        const { error: updateError } = await supabase
+        await supabase
           .from("profiles")
           .update(updates)
           .eq("id", user.id);
-
-        if (updateError) {
-          console.error("[Profile] Self-heal update error:", updateError.message);
-        }
 
         return { ...data, ...updates } as Profile;
       }
@@ -109,20 +94,15 @@ export function useProfile() {
         data.trial_end_date &&
         new Date(data.trial_end_date).getTime() < Date.now()
       ) {
-        console.log("[Profile] Auto-expiring trial (end date passed)...");
         const updates = {
           subscription_status: "expired",
           trial_used: true,
         };
 
-        const { error: updateError } = await supabase
+        await supabase
           .from("profiles")
           .update(updates)
           .eq("id", user.id);
-
-        if (updateError) {
-          console.error("[Profile] Auto-expire error:", updateError.message);
-        }
 
         return { ...data, ...updates } as Profile;
       }
@@ -143,10 +123,7 @@ export function useProfile() {
         .update(updates)
         .eq("id", user.id);
 
-      if (error) {
-        console.error("[Profile] Update error:", error.message);
-        throw new Error(error.message);
-      }
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });

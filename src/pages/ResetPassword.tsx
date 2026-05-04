@@ -36,21 +36,16 @@ const ResetPassword = () => {
     let cancelled = false;
 
     const checkSession = async () => {
-      // First, try to extract tokens from URL hash (Supabase implicit flow)
       const hash = window.location.hash;
       if (hash && hash.includes("access_token") && hash.includes("type=recovery")) {
-        console.log("[ResetPassword] Found recovery tokens in URL hash");
         await new Promise((r) => setTimeout(r, 500));
       }
 
-      // Also handle PKCE flow: ?code=... query param
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       if (code) {
-        console.log("[ResetPassword] Found PKCE code, exchanging for session...");
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          console.error("[ResetPassword] Code exchange failed:", error.message);
           if (!cancelled) {
             setErrorMessage("Invalid or expired reset link. Please request a new one.");
             setPageState("error");
@@ -59,15 +54,12 @@ const ResetPassword = () => {
         }
       }
 
-      // Check if we have a valid session now
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!cancelled) {
         if (session) {
-          console.log("[ResetPassword] ✅ Valid session, showing password form");
           setPageState("form");
         } else {
-          console.warn("[ResetPassword] No session found");
           setErrorMessage("Invalid or expired reset link. Please request a new one.");
           setPageState("error");
         }
